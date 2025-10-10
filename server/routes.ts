@@ -4,7 +4,14 @@ import { storage } from "./storage";
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openai: OpenAI | null = null;
+
+// Initialize OpenAI client only if API key is available
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+} else {
+  console.warn('⚠️  OPENAI_API_KEY not found. AI suggestions will not be available until you add the API key.');
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/suggestions", async (req, res) => {
@@ -13,6 +20,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!transcript || transcript.length === 0) {
         return res.json({ suggestions: [] });
+      }
+
+      // Check if OpenAI is available
+      if (!openai) {
+        return res.status(503).json({ 
+          error: 'AI service unavailable',
+          message: 'OPENAI_API_KEY is not configured. Please add your API key to enable AI suggestions.' 
+        });
       }
 
       // Build context prompt
