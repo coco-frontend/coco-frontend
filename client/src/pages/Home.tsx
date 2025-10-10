@@ -83,7 +83,7 @@ export default function Home() {
       <div className="w-full max-w-md mx-auto">
         <div className="space-y-6">
           {/* Main card with animation and title */}
-          <Card className="p-6 space-y-4 text-center bg-transparent">
+          <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
             {/* Rive Animation or Fallback */}
             <div className="flex justify-center -mt-2">
               {riveError ? (
@@ -153,7 +153,7 @@ export default function Home() {
               <Button
                 onClick={handleStartSession}
                 size="lg"
-                className="w-full h-14 text-base font-semibold rounded-full bg-[#FFE8C9] hover:bg-[#FFE8C9]/90"
+                className="w-full h-14 text-base font-semibold rounded-full bg-[#FFE8C9] hover:bg-[#FFE8C9]/90 text-black border-0"
                 data-testid="button-start-session"
               >
                 Let's Talk!

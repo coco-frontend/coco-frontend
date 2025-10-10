@@ -54,8 +54,8 @@ export default function ContextPill({
       <Button
         variant="outline"
         onClick={handleToggle}
-        className={`w-full h-12 justify-between rounded-full text-sm font-medium transition-all ${
-          isFilled ? "bg-primary/10 border-primary/30" : ""
+        className={`w-full h-12 justify-between rounded-full text-sm font-medium transition-all border-0 ${
+          isFilled ? "bg-primary/10" : ""
         }`}
         data-testid={`pill-${testId}`}
       >
