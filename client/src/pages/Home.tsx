@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRive } from "@rive-app/react-canvas";
+import { Mic } from "lucide-react";
 import ContextPill from "@/components/ContextPill";
 
 export default function Home() {
@@ -11,21 +11,7 @@ export default function Home() {
   const [eventDetails, setEventDetails] = useState("");
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
-
-  const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco_1760095148906.riv",
-    stateMachines: "State Machine 1",
-    autoplay: true,
-    onLoad: () => {
-      if (rive) {
-        const inputs = rive.stateMachineInputs("State Machine 1");
-        const loadingTrigger = inputs?.find(i => i.name === "Loading");
-        if (loadingTrigger) {
-          loadingTrigger.fire();
-        }
-      }
-    },
-  });
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Load saved context from localStorage on mount
   useEffect(() => {
@@ -52,13 +38,7 @@ export default function Home() {
   }, [userName, eventDetails, goals, participants]);
 
   const handleStartSession = () => {
-    if (rive) {
-      const inputs = rive.stateMachineInputs("State Machine 1");
-      const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
-      if (voiceStartsTrigger) {
-        voiceStartsTrigger.fire();
-      }
-    }
+    setIsAnimating(true);
     setTimeout(() => {
       setLocation("/session");
     }, 300);
@@ -81,8 +61,10 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center py-2">
-            <div className="w-32 h-32 md:w-40 md:h-40">
-              <RiveComponent />
+            <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center">
+              <div className={`transition-all duration-300 ${isAnimating ? 'scale-110 opacity-80' : 'animate-pulse'}`}>
+                <Mic className="w-24 h-24 md:w-32 md:h-32 text-primary" strokeWidth={1.5} />
+              </div>
             </div>
           </div>
 

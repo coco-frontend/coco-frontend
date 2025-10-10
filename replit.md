@@ -153,15 +153,18 @@ npm run dev
 
 ## Known Issues
 
-1. **Rive Animation Console Warnings**: "Bad header" / "Problem loading file" errors appear in browser console
-   - Non-blocking: Animation loads and functions correctly
-   - May indicate file format compatibility issue
-   - Monitor in production to ensure asset integrity
-
-2. **Microphone Permissions**: Web Speech API requires explicit user permission
+1. **Microphone Permissions**: Web Speech API requires explicit user permission
    - First-time users see browser permission prompt
    - Automated tests fail permission checks (expected behavior)
    - Production users grant permission normally
+
+## Recent Fixes (October 10, 2025)
+
+1. **Rive Animation Replaced**: Original Rive file had compatibility issues ("Bad header" errors)
+   - Replaced with animated Lucide React microphone icon
+   - Smooth pulsing animation on home page
+   - Scales up on "Let's Talk!" button click
+   - No console errors, production-ready
 
 ## Next Steps for Production
 
