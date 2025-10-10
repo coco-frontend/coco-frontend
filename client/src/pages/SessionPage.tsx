@@ -56,10 +56,12 @@ export default function SessionPage() {
             speaker: "user",
           };
           
-          setTranscripts(prev => [...prev, newTranscript]);
-          
-          // Send to backend for AI suggestions
-          fetchSuggestions([...transcripts, newTranscript]);
+          setTranscripts(prev => {
+            const updated = [...prev, newTranscript];
+            // Send to backend for AI suggestions
+            fetchSuggestions(updated);
+            return updated;
+          });
         }
       };
 
@@ -89,7 +91,7 @@ export default function SessionPage() {
         recognitionRef.current.stop();
       }
     };
-  }, []);
+  }, [isRecording, toast]);
 
   // Fetch AI suggestions from backend
   const fetchSuggestions = async (currentTranscripts: TranscriptLine[]) => {
