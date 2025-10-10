@@ -112,6 +112,14 @@ export default function Home() {
     setAppState("recording");
     setIsRecording(true);
     setIsPaused(false);
+    
+    // Show mockup suggestion
+    setSuggestions([{
+      text: "Happy birthday to Jamie",
+      type: "tip",
+      priority: "high"
+    }]);
+    
     startSpeechRecognition();
   };
 
@@ -327,6 +335,16 @@ export default function Home() {
           {/* CONTEXT MENU STATE */}
           {appState === "contextMenu" && (
             <div className="space-y-2 pt-2">
+              <Button
+                variant="ghost"
+                onClick={() => setAppState("nameEntry")}
+                className="text-[#ffffff] hover:bg-white/10 mb-2"
+                data-testid="button-back-to-name"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+
               <Button
                 variant="outline"
                 onClick={() => handleEditField("eventDetails")}
