@@ -1,60 +1,119 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import SessionHeader from "@/components/SessionHeader";
 import TranscriptDisplay, { TranscriptLine } from "@/components/TranscriptDisplay";
 import SuggestionsPanel from "@/components/SuggestionsPanel";
 import { Suggestion } from "@/components/SuggestionCard";
 import { Separator } from "@/components/ui/separator";
-
-// todo: remove mock functionality
-const mockTranscripts: TranscriptLine[] = [
-  {
-    id: "1",
-    text: "Hi, thanks for taking the time to meet with me today.",
-    timestamp: "00:00",
-    speaker: "user",
-  },
-  {
-    id: "2",
-    text: "Of course! I'm glad we could connect. What would you like to discuss?",
-    timestamp: "00:05",
-    speaker: "other",
-  },
-  {
-    id: "3",
-    text: "I wanted to talk about the project timeline and some ideas I have.",
-    timestamp: "00:12",
-    speaker: "user",
-  },
-];
-
-const mockSuggestions: Suggestion[] = [
-  {
-    id: "1",
-    type: "tip",
-    title: "Active Listening",
-    content: "Show you're engaged by nodding and maintaining eye contact.",
-  },
-  {
-    id: "2",
-    type: "response",
-    title: "Suggested Response",
-    content: "That's a great point. Can you tell me more about your approach?",
-  },
-  {
-    id: "3",
-    type: "insight",
-    title: "Positive Signal",
-    content: "They seem interested! Their body language shows engagement.",
-  },
-];
+import { useToast } from "@/hooks/use-toast";
 
 export default function SessionPage() {
   const [, setLocation] = useLocation();
-  const [isRecording, setIsRecording] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState("00:00");
   const [seconds, setSeconds] = useState(0);
+  const [transcripts, setTranscripts] = useState<TranscriptLine[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  
+  const recognitionRef = useRef<any>(null);
+  const { toast } = useToast();
 
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast({
+          title: "Not Supported",
+          description: "Speech recognition is not supported in your browser. Try Chrome or Edge.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        const results = event.results;
+        const lastResult = results[results.length - 1];
+        
+        if (lastResult.isFinal) {
+          const transcript = lastResult[0].transcript;
+          const timestamp = new Date().toLocaleTimeString('en-US', { 
+            hour12: false, 
+            minute: '2-digit', 
+            second: '2-digit' 
+          });
+          
+          const newTranscript: TranscriptLine = {
+            id: Date.now().toString(),
+            text: transcript,
+            timestamp: timestamp.slice(0, 5),
+            speaker: "user",
+          };
+          
+          setTranscripts(prev => [...prev, newTranscript]);
+          
+          // Send to backend for AI suggestions
+          fetchSuggestions([...transcripts, newTranscript]);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          return;
+        }
+        toast({
+          title: "Recognition Error",
+          description: `Error: ${event.error}`,
+          variant: "destructive",
+        });
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          recognition.start();
+        }
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  // Fetch AI suggestions from backend
+  const fetchSuggestions = async (currentTranscripts: TranscriptLine[]) => {
+    try {
+      const context = localStorage.getItem('conversationContext');
+      const response = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcripts: currentTranscripts,
+          context: context ? JSON.parse(context) : null,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error('Failed to fetch suggestions:', error);
+    }
+  };
+
+  // Timer
   useEffect(() => {
     if (isRecording) {
       const interval = setInterval(() => {
@@ -70,8 +129,27 @@ export default function SessionPage() {
     setDuration(`${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`);
   }, [seconds]);
 
+  const toggleRecording = () => {
+    if (!recognitionRef.current) return;
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Failed to start recording:', error);
+      }
+    }
+  };
+
   const handleEndSession = () => {
     if (confirm("Are you sure you want to end this session?")) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
       setLocation("/");
     }
   };
@@ -80,7 +158,7 @@ export default function SessionPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SessionHeader
         isRecording={isRecording}
-        onToggleRecording={() => setIsRecording(!isRecording)}
+        onToggleRecording={toggleRecording}
         onEndSession={handleEndSession}
         onBack={() => setLocation("/")}
         duration={duration}
@@ -92,13 +170,13 @@ export default function SessionPage() {
             <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 px-1">
               📝 What's Being Said
             </h2>
-            <TranscriptDisplay transcripts={mockTranscripts} />
+            <TranscriptDisplay transcripts={transcripts} />
           </section>
 
           <Separator />
 
           <section>
-            <SuggestionsPanel suggestions={mockSuggestions} />
+            <SuggestionsPanel suggestions={suggestions} />
           </section>
         </div>
       </main>
