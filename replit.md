@@ -2,7 +2,22 @@
 
 ## Overview
 
-COCO (Conversation Companion) is a real-time conversation assistant application that provides live transcription and contextual suggestions during conversations. The app uses browser-based speech recognition to transcribe conversations and offers intelligent suggestions to help users navigate their interactions more effectively. Inspired by Granola's clean transcription interface, COCO emphasizes a distraction-free, mobile-first design with glanceable information and progressive disclosure.
+COCO (Conversation Companion) is a real-time conversation assistant application that provides AI-powered suggestions during live conversations. The app uses browser-based speech recognition to transcribe conversations in the background and leverages OpenAI's GPT-5 to generate contextual, actionable suggestions. The design emphasizes a distraction-free, mobile-first interface with ChatGPT-style expandable pills for context entry and Rive animations for visual feedback.
+
+## Recent Updates (October 10, 2025)
+
+### ✅ Completed Features
+1. **Rive Animation Integration**: Replaced static microphone icon with animated Rive character that responds to user actions (Loading trigger on load, voice starts on session start)
+2. **Expandable Context Pills**: Redesigned context form with ChatGPT-style pill buttons that expand to show input fields with proper cancel/save behavior
+3. **OpenAI Backend Integration**: Implemented GPT-5 powered suggestion generation with graceful error handling for missing API keys
+4. **Complete End-to-End Flow**: Fully functional conversation flow from context setup → recording → AI suggestions → session end
+
+### 🔧 Technical Implementation
+- Web Speech API for browser-native audio transcription
+- localStorage for context persistence and rehydration
+- POST /api/suggestions endpoint for AI suggestion generation
+- Responsive error handling with toast notifications
+- Mobile-optimized touch targets and rounded-full pill design
 
 ## User Preferences
 
@@ -15,93 +30,143 @@ Preferred communication style: Simple, everyday language.
 **Framework & Build System**
 - React 18 with TypeScript for type-safe component development
 - Vite as the build tool and development server for fast HMR and optimized production builds
-- Wouter for lightweight client-side routing (navigation between home, context setup, and active session pages)
+- Wouter for lightweight client-side routing (/ → home, /session → active conversation)
 
 **UI Component System**
-- Shadcn/ui component library (New York style variant) providing a comprehensive set of Radix UI primitives
+- Shadcn/ui component library (New York style variant) providing Radix UI primitives
 - Tailwind CSS for utility-first styling with custom design tokens
-- Custom CSS variables for theming (light mode focused with HSL color definitions)
+- Rive animations (@rive-app/react-canvas) for interactive visual feedback
 - Inter font family for consistent typography
 
 **State Management**
-- React Query (TanStack Query) for server state management and data fetching
+- React Query (TanStack Query) for server state management (configured but minimal usage)
 - Local component state using React hooks (useState, useEffect, useRef)
 - LocalStorage for persisting conversation context between sessions
 
 **Key Features**
 - **Speech Recognition**: Browser-native Web Speech API (webkitSpeechRecognition) for real-time transcription
-- **Rive Animations**: Interactive character animations using @rive-app/react-canvas for visual feedback
-- **Real-time Updates**: Live transcript display with auto-scrolling and speaker identification
-- **Suggestion System**: Dynamic suggestion cards categorized by type (tip, response, warning, insight)
+  - Continuous mode with interim results
+  - Automatic restart on connection drop (using refs to avoid stale closures)
+  - Proper error handling for permissions and browser compatibility
+  
+- **Rive Animations**: Interactive character animations for visual engagement
+  - Loading trigger fires on page load
+  - Voice starts trigger fires when starting a session
+  - Located at /attached_assets/coco_1760095148906.riv
+  
+- **Context Management**: Expandable pill-based input system
+  - Your Name, Event Details, Your Goals, Participants & Relationships
+  - Local state staging for edits (only commits on Save, discards on Cancel)
+  - Auto-save to localStorage, rehydrates on page load
+  - Visual checkmarks indicate filled pills
+  
+- **AI Suggestions**: Real-time conversation guidance powered by OpenAI GPT-5
+  - Contextual suggestions based on user profile and conversation transcript
+  - Categorized by type (question, tip, response) and priority (high, normal)
+  - Graceful degradation when API key is missing
 
-**Mobile-First Design Decisions**
-- Touch-optimized UI with large tap targets (minimum 44px height for buttons)
-- Responsive breakpoints using Tailwind's default system (768px mobile breakpoint)
-- Fixed/sticky positioning for critical controls (session header)
-- Viewport meta tag prevents user scaling for consistent mobile experience
+**Mobile-First Design**
+- Touch-optimized UI with 44px+ tap targets
+- Rounded-full pill buttons for modern aesthetic
+- Responsive breakpoints (768px mobile threshold)
+- Fixed positioning for session controls
+- Distraction-free suggestion panel (transcript hidden)
 
 ### Backend Architecture
 
 **Server Framework**
 - Express.js server with TypeScript for type safety
 - ESM module system (type: "module" in package.json)
-- Custom middleware for request logging and JSON response capture
+- Vite middleware integration for development HMR
 
-**Development vs Production**
-- Development: Vite middleware integrated with Express for HMR
-- Production: Static file serving from built dist/public directory
-- Conditional Replit development plugins (cartographer, dev-banner) loaded only in development
+**API Routes**
+- `POST /api/suggestions`: Generates AI-powered conversation suggestions
+  - Accepts: `{ context, transcript }` where context includes userName, eventDetails, goals, participants
+  - Returns: `{ suggestions: [{ text, type, priority }] }`
+  - Uses OpenAI GPT-5 model with JSON response format
+  - Gracefully handles missing OPENAI_API_KEY with 503 status
 
-**API Structure**
-- Currently minimal backend implementation (placeholder routes in server/routes.ts)
-- RESTful API pattern with /api prefix convention
-- Designed for future expansion with conversation analysis and suggestion generation
+**OpenAI Integration**
+- Model: gpt-5 (latest, released August 7, 2025)
+- Parameters: max_completion_tokens (1024), response_format: json_object
+- No temperature parameter (gpt-5 restriction)
+- Defensive initialization: server starts even without API key
+- Helpful error messages guide users to add missing credentials
 
-### Data Storage Solutions
+### Data Storage
 
-**Database Configuration**
-- Drizzle ORM configured for PostgreSQL (dialect: "postgresql")
-- Neon Database serverless driver (@neondatabase/serverless) for connection pooling
-- Schema-first approach with migrations stored in ./migrations directory
+**Current Implementation**
+- No database required for core functionality
+- Context stored in browser localStorage (client-side persistence)
+- Transcript stored in React state (session-only, not persisted)
+- No user authentication (single-user, privacy-focused design)
 
-**Current Schema**
-- Users table with UUID primary keys (gen_random_uuid())
-- Username/password authentication schema (not yet implemented in routes)
-- Zod validation schemas generated from Drizzle tables for runtime type safety
-
-**Storage Abstraction**
-- IStorage interface pattern for CRUD operations
-- MemStorage in-memory implementation (current placeholder)
-- Designed to be swapped with database-backed storage without changing application code
-
-### Authentication and Authorization
-
-**Planned Implementation** (not yet active)
-- Session-based authentication using connect-pg-simple for PostgreSQL session store
-- User model with username/password fields in schema
-- Express session configuration ready (credentials: "include" in fetch requests)
-- No authentication currently enforced on routes
+**Database Configuration** (available but unused)
+- Drizzle ORM configured for PostgreSQL
+- Neon serverless driver ready for future expansion
+- Users table schema defined but not implemented
 
 ### External Dependencies
 
-**Third-Party UI Libraries**
-- Radix UI primitives (20+ component packages) for accessible, unstyled components
-- Rive for animated character interactions and visual feedback
-- Lucide React for consistent iconography
-- cmdk for command palette patterns
+**Core UI Libraries**
+- @rive-app/react-canvas: Interactive animations
+- Radix UI primitives: Accessible component foundation
+- Lucide React: Icon library
+- Tailwind CSS: Utility-first styling
+
+**Backend Services**
+- OpenAI SDK: GPT-5 API integration
+- Express: Web server framework
 
 **Development Tools**
-- TypeScript for type checking (noEmit mode, types checked separately from build)
-- ESBuild for server-side bundling in production
-- Drizzle Kit for database migrations and schema management
-- PostCSS with Tailwind and Autoprefixer for CSS processing
+- TypeScript: Static type checking
+- Vite: Fast build tooling
+- ESBuild: Production bundling
 
-**Runtime Dependencies**
-- date-fns for date formatting and manipulation
-- class-variance-authority + clsx for conditional CSS class composition
-- React Hook Form with Zod resolvers for form validation (configured but not extensively used yet)
+## Environment Variables
 
-**Replit-Specific Integrations**
-- @replit/vite-plugin-runtime-error-modal for development error overlay
-- @replit/vite-plugin-cartographer for code navigation
-- @replit/vite-plugin-dev-banner for development environment indicators
+### Required for Full Functionality
+- `OPENAI_API_KEY`: OpenAI API key for AI suggestion generation
+  - Get from: https://platform.openai.com/api-keys
+  - App runs without it but shows helpful 503 errors for suggestions
+
+### Auto-Configured
+- `SESSION_SECRET`: Already set for session management
+- Vite environment variables automatically handled
+
+## Development Workflow
+
+**Starting the App**
+```bash
+npm run dev
+```
+- Starts Express server on port 5000
+- Vite HMR for instant frontend updates
+- Server logs show API key status on startup
+
+**Key Files**
+- `client/src/pages/Home.tsx`: Landing page with Rive animation and context pills
+- `client/src/pages/SessionPage.tsx`: Active conversation page with recording and suggestions
+- `client/src/components/ContextPill.tsx`: Reusable expandable pill component
+- `server/routes.ts`: API endpoint for AI suggestions
+- `design_guidelines.md`: UI/UX design specifications
+
+## Known Issues
+
+1. **Rive Animation Console Warnings**: "Bad header" / "Problem loading file" errors appear in browser console
+   - Non-blocking: Animation loads and functions correctly
+   - May indicate file format compatibility issue
+   - Monitor in production to ensure asset integrity
+
+2. **Microphone Permissions**: Web Speech API requires explicit user permission
+   - First-time users see browser permission prompt
+   - Automated tests fail permission checks (expected behavior)
+   - Production users grant permission normally
+
+## Next Steps for Production
+
+1. ✅ Add OPENAI_API_KEY environment variable
+2. ✅ Test with real microphone permissions in browser
+3. ✅ Monitor Rive asset warnings in production logs
+4. ✅ Consider rate limiting for /api/suggestions endpoint
+5. ✅ Add request validation (Zod) for API payloads
