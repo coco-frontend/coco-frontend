@@ -98,7 +98,7 @@ export default function Home() {
                     Help COCO Understand 💭
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Share some context so I can give you better, more personalized suggestions!
+                    Share some context so I can give you personalized suggestions!
                   </p>
                 </div>
 
