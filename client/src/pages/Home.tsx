@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRive } from "@rive-app/react-canvas";
-import { Mic } from "lucide-react";
 import ContextPill from "@/components/ContextPill";
 import landingBg from "@assets/landing_background.webp";
 
@@ -14,8 +13,6 @@ export default function Home() {
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
 
-  const [riveError, setRiveError] = useState(false);
-  
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco.riv",
     stateMachines: "State Machine 1",
@@ -28,9 +25,6 @@ export default function Home() {
           loadingTrigger.fire();
         }
       }
-    },
-    onLoadError: () => {
-      setRiveError(true);
     },
   });
 
@@ -84,19 +78,11 @@ export default function Home() {
         <div className="space-y-6">
           {/* Main card with animation and title */}
           <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
-            {/* Rive Animation or Fallback */}
+            {/* Rive Animation */}
             <div className="flex justify-center -mt-2">
-              {riveError ? (
-                <div className="w-40 h-40 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Mic className="w-12 h-12 text-primary" />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-40 h-40">
-                  <RiveComponent />
-                </div>
-              )}
+              <div className="w-40 h-40">
+                <RiveComponent />
+              </div>
             </div>
 
             {/* Title */}
