@@ -43,8 +43,6 @@ export default function Home() {
     }
   }, []);
 
-  const hasContext = userName || eventDetails || goals || participants;
-
   // Save context to localStorage whenever values change
   useEffect(() => {
     const context = { userName, eventDetails, goals, participants };
@@ -65,57 +63,42 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-start md:items-center justify-center p-3 md:p-4">
-      <div className="w-full max-w-2xl space-y-4 md:space-y-5 py-4 md:py-0">
-        <Card className="p-6 md:p-8 text-center space-y-4 md:space-y-6">
-          <div className="space-y-2 md:space-y-3">
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
-              COCO
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground font-medium">
-              Your Conversation Companion
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto px-2">
-              Get real-time suggestions to navigate your conversations with confidence ✨
-            </p>
-          </div>
-
-          <div className="flex justify-center py-2">
-            <div className="w-32 h-32 md:w-40 md:h-40">
-              <RiveComponent />
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: 'url(/attached_assets/landing_background.webp), linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--background)), hsl(var(--accent) / 0.1))',
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
+      }}
+    >
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      
+      {/* Centered content container */}
+      <div className="relative z-10 w-full max-w-md mx-auto">
+        <div className="space-y-6">
+          {/* Main card with animation and title */}
+          <Card className="p-6 space-y-4 text-center bg-card/95 backdrop-blur">
+            {/* Rive Animation */}
+            <div className="flex justify-center -mt-2">
+              <div className="w-40 h-40">
+                <RiveComponent />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-3 pt-2">
-            <Button
-              onClick={handleStartSession}
-              size="lg"
-              className="w-full h-14 md:h-16 text-base md:text-lg font-semibold rounded-full"
-              data-testid="button-start-session"
-            >
-              Let's Talk!
-            </Button>
-          </div>
-
-          {hasContext && (
-            <p className="text-sm text-chart-3 font-medium">
-              ✨ Context set - I'll provide personalized suggestions just for you!
-            </p>
-          )}
-        </Card>
-
-        <Card className="p-4 md:p-6">
-          <div className="space-y-4 md:space-y-5">
-            <div className="text-center space-y-1">
-              <h3 className="text-base md:text-lg font-bold text-foreground">
-                Customize your session
-              </h3>
+            {/* Title */}
+            <div className="space-y-2">
+              <h1 className="text-5xl font-bold text-foreground tracking-tight">
+                COCO
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Share some context so I can give you personalized suggestions!
+                Your Conversation Companion
               </p>
             </div>
 
-            <div className="space-y-3">
+            {/* Context Pills */}
+            <div className="space-y-2 pt-2">
               <ContextPill
                 label="Your Name"
                 value={userName}
@@ -129,7 +112,7 @@ export default function Home() {
                 label="Event Details"
                 value={eventDetails}
                 onChange={setEventDetails}
-                placeholder="e.g., Team meeting, Coffee chat..."
+                placeholder="e.g., Team meeting"
                 type="input"
                 testId="input-event-details"
               />
@@ -152,8 +135,20 @@ export default function Home() {
                 testId="input-participants"
               />
             </div>
-          </div>
-        </Card>
+
+            {/* Start button */}
+            <div className="pt-2">
+              <Button
+                onClick={handleStartSession}
+                size="lg"
+                className="w-full h-14 text-base font-semibold rounded-full"
+                data-testid="button-start-session"
+              >
+                Let's Talk!
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
