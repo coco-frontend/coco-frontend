@@ -42,14 +42,22 @@ export default function Home() {
 
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco-v3.riv",
-    stateMachines: "State Machine 1",
     autoplay: true,
     onLoad: () => {
       if (rive) {
-        const inputs = rive.stateMachineInputs("State Machine 1");
-        const loadingTrigger = inputs?.find(i => i.name === "Loading");
-        if (loadingTrigger) {
-          loadingTrigger.fire();
+        // Log available state machines
+        const stateMachineNames = rive.stateMachineNames;
+        console.log("Available state machines:", stateMachineNames);
+        
+        // Try to get inputs from the first state machine if available
+        if (stateMachineNames && stateMachineNames.length > 0) {
+          const inputs = rive.stateMachineInputs(stateMachineNames[0]);
+          console.log("Available inputs:", inputs?.map(i => i.name));
+          
+          const loadingTrigger = inputs?.find(i => i.name === "Loading");
+          if (loadingTrigger) {
+            loadingTrigger.fire();
+          }
         }
       }
     },
