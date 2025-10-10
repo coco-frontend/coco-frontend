@@ -16,7 +16,7 @@ export default function Home() {
   const [riveError, setRiveError] = useState(false);
   
   const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco_1760095148906.riv",
+    src: "/attached_assets/coco.riv",
     stateMachines: "State Machine 1",
     autoplay: true,
     onLoad: () => {
