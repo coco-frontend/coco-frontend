@@ -16,6 +16,9 @@ COCO (Conversation Companion) is a real-time conversation assistant application 
 ### 🔧 Technical Implementation
 - Background: Vite asset import system (`@assets/landing_background.webp`) for proper image loading
 - Animation: Rive file with fallback to microphone icon when file has compatibility issues
+- Transparent Design: Card component with no borders/shadows (bg-transparent border-0 shadow-none)
+- White Typography: All text elements use #ffffff for visibility over background
+- Custom Button Styling: Cream/beige CTA button (#FFE8C9) with black text, borderless
 - Web Speech API for browser-native audio transcription
 - localStorage for context persistence and rehydration
 - POST /api/suggestions endpoint for AI suggestion generation
