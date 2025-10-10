@@ -42,7 +42,21 @@ export default function Home() {
 
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco-v3.riv",
+    stateMachines: "State Machine 1",
     autoplay: true,
+    onLoad: () => {
+      console.log("Rive loaded, rive instance:", rive);
+      if (rive) {
+        const inputs = rive.stateMachineInputs("State Machine 1");
+        console.log("State machine inputs:", inputs?.map(i => i.name));
+        
+        const loadingTrigger = inputs?.find(i => i.name === "Loading");
+        if (loadingTrigger) {
+          console.log("Firing Loading trigger");
+          loadingTrigger.fire();
+        }
+      }
+    },
   });
 
   // Load saved context from localStorage on mount
@@ -95,8 +109,14 @@ export default function Home() {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Trigger animation when starting
-      // TODO: Configure state machine triggers once animation structure is confirmed
+      if (rive) {
+        const inputs = rive.stateMachineInputs("State Machine 1");
+        const voiceStartedTrigger = inputs?.find(i => i.name === "Voice started");
+        if (voiceStartedTrigger) {
+          console.log("Firing Voice started trigger");
+          voiceStartedTrigger.fire();
+        }
+      }
       
       setAppState("recording");
       setIsRecording(true);
