@@ -16,17 +16,20 @@ export default function StartSessionCard({
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-8">
       <Card className="p-8 text-center space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold text-foreground">
-            Conversation Companion
+        <div className="space-y-3">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+            Coco
           </h1>
-          <p className="text-muted-foreground">
-            Get real-time suggestions to navigate your conversations with confidence
+          <p className="text-lg text-muted-foreground font-medium">
+            Your Conversation Companion
+          </p>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Get real-time suggestions to navigate your conversations with confidence ✨
           </p>
         </div>
 
         <div className="flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center hover-elevate">
             <Mic className="h-12 w-12 text-primary" />
           </div>
         </div>
@@ -39,7 +42,7 @@ export default function StartSessionCard({
             data-testid="button-start-session"
           >
             <Mic className="mr-2 h-5 w-5" />
-            Start Conversation
+            Let's Talk!
           </Button>
           
           <Button
@@ -50,13 +53,13 @@ export default function StartSessionCard({
             data-testid="button-set-context"
           >
             <Settings className="mr-2 h-4 w-4" />
-            {hasContext ? "Update Context" : "Set Context First"}
+            {hasContext ? "Update My Context" : "Set Context (Optional)"}
           </Button>
         </div>
 
         {hasContext && (
-          <p className="text-sm text-chart-3">
-            ✓ Context set - we'll provide personalized suggestions
+          <p className="text-sm text-chart-3 font-medium">
+            ✨ Context set - I'll provide personalized suggestions just for you!
           </p>
         )}
       </Card>

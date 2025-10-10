@@ -25,7 +25,7 @@ export default function TranscriptDisplay({ transcripts }: TranscriptDisplayProp
     return (
       <div className="flex items-center justify-center h-40 text-center">
         <p className="text-muted-foreground text-sm">
-          Start recording to see your conversation transcript
+          🎙️ Start recording to see your conversation transcript here
         </p>
       </div>
     );

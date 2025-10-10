@@ -90,7 +90,7 @@ export default function SessionPage() {
         <div className="max-w-7xl mx-auto p-4 space-y-6">
           <section>
             <h2 className="text-lg font-semibold text-foreground mb-3">
-              Live Transcript
+              📝 What's Being Said
             </h2>
             <TranscriptDisplay transcripts={mockTranscripts} />
           </section>

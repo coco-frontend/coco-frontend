@@ -27,11 +27,11 @@ export default function ContextForm({ onSubmit, onSkip }: ContextFormProps) {
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
-          Set Your Context
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          Help Coco Understand 💭
         </h1>
         <p className="text-muted-foreground">
-          Optional: Help us provide better suggestions by sharing details about your conversation
+          Share some context so I can give you better, more personalized suggestions!
         </p>
       </div>
 
@@ -86,14 +86,14 @@ export default function ContextForm({ onSubmit, onSkip }: ContextFormProps) {
             data-testid="button-skip-context"
             className="flex-1 h-12"
           >
-            Skip for now
+            I'll Skip This
           </Button>
           <Button
             type="submit"
             data-testid="button-save-context"
             className="flex-1 h-12"
           >
-            Continue
+            Let's Go!
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

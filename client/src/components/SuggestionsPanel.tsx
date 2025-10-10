@@ -10,7 +10,7 @@ export default function SuggestionsPanel({ suggestions }: SuggestionsPanelProps)
     return (
       <div className="flex items-center justify-center h-40 text-center px-4">
         <p className="text-muted-foreground text-sm">
-          Suggestions will appear here as the conversation progresses
+          💡 I'll share helpful suggestions here as your conversation flows
         </p>
       </div>
     );
@@ -19,7 +19,7 @@ export default function SuggestionsPanel({ suggestions }: SuggestionsPanelProps)
   return (
     <div className="w-full">
       <h3 className="text-sm font-semibold text-foreground mb-3 px-4">
-        Live Suggestions
+        💡 Coco's Suggestions
       </h3>
       <ScrollArea className="h-80 px-4">
         <div className="space-y-3 pb-4">
