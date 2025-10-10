@@ -107,9 +107,9 @@ export default function Home() {
       
       if (rive) {
         const inputs = rive.stateMachineInputs("State Machine 1");
-        const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
-        if (voiceStartsTrigger) {
-          voiceStartsTrigger.fire();
+        const voiceStartedTrigger = inputs?.find(i => i.name === "Voice started");
+        if (voiceStartedTrigger) {
+          voiceStartedTrigger.fire();
         }
       }
       
