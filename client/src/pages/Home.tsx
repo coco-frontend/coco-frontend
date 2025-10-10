@@ -359,7 +359,7 @@ export default function Home() {
                 placeholder="What's your name?"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="h-12 text-base text-center bg-white/90"
+                className="h-12 text-base text-center bg-white/90 rounded-full focus-visible:ring-yellow-400"
                 onKeyDown={(e) => e.key === 'Enter' && handleConfirmName()}
                 autoFocus
                 data-testid="input-user-name"
@@ -456,7 +456,7 @@ export default function Home() {
                   placeholder="e.g., Team meeting"
                   value={eventDetails}
                   onChange={(e) => setEventDetails(e.target.value)}
-                  className="h-12 text-base bg-white/90"
+                  className="h-12 text-base bg-white/90 rounded-full focus-visible:ring-yellow-400"
                   autoFocus
                   data-testid="input-event-details"
                 />
@@ -467,7 +467,7 @@ export default function Home() {
                   placeholder="What do you want to achieve?"
                   value={goals}
                   onChange={(e) => setGoals(e.target.value)}
-                  className="min-h-24 text-base bg-white/90"
+                  className="min-h-24 text-base bg-white/90 rounded-3xl focus-visible:ring-yellow-400"
                   autoFocus
                   data-testid="input-goals"
                 />
@@ -478,7 +478,7 @@ export default function Home() {
                   placeholder="Who will you be talking to?"
                   value={participants}
                   onChange={(e) => setParticipants(e.target.value)}
-                  className="min-h-24 text-base bg-white/90"
+                  className="min-h-24 text-base bg-white/90 rounded-3xl focus-visible:ring-yellow-400"
                   autoFocus
                   data-testid="input-participants"
                 />
