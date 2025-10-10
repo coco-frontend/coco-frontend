@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import landingBg from "@assets/landing_background.webp";
 
 type AppState = "nameEntry" | "contextMenu" | "editingContext" | "recording";
-type ContextField = "eventDetails" | "goals" | "participants";
+type ContextField = "eventDetails" | "goals" | "participants" | "tone";
 
 interface Suggestion {
   text: string;
@@ -29,6 +29,7 @@ export default function Home() {
   const [eventDetails, setEventDetails] = useState("");
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
+  const [tone, setTone] = useState("");
   
   // Recording state
   const [isRecording, setIsRecording] = useState(false);
@@ -74,6 +75,7 @@ export default function Home() {
         if (context.eventDetails) setEventDetails(context.eventDetails);
         if (context.goals) setGoals(context.goals);
         if (context.participants) setParticipants(context.participants);
+        if (context.tone) setTone(context.tone);
       } catch (error) {
         console.error("Failed to load saved context:", error);
       }
@@ -82,9 +84,9 @@ export default function Home() {
 
   // Save context to localStorage whenever values change
   useEffect(() => {
-    const context = { userName, eventDetails, goals, participants };
+    const context = { userName, eventDetails, goals, participants, tone };
     localStorage.setItem("conversationContext", JSON.stringify(context));
-  }, [userName, eventDetails, goals, participants]);
+  }, [userName, eventDetails, goals, participants, tone]);
 
   // Confirm name and move to context menu
   const handleConfirmName = () => {
@@ -239,6 +241,7 @@ export default function Home() {
             eventDetails,
             goals,
             participants,
+            tone,
           },
           transcript: newTranscript,
         }),
@@ -426,6 +429,18 @@ export default function Home() {
                 </span>
               </Button>
 
+              <Button
+                variant="outline"
+                onClick={() => handleEditField("tone")}
+                className="w-full h-12 justify-between rounded-full text-sm font-medium border-0"
+                data-testid="pill-tone"
+              >
+                <span className="flex items-center gap-2 text-[#ffffff]">
+                  {tone && <Check className="h-4 w-4 text-primary" />}
+                  Tone
+                </span>
+              </Button>
+
               <div className="pt-2">
                 <Button
                   onClick={handleStartRecording}
@@ -482,6 +497,17 @@ export default function Home() {
                   className="min-h-24 text-base bg-white/90 rounded-3xl focus-visible:ring-yellow-400"
                   autoFocus
                   data-testid="input-participants"
+                />
+              )}
+
+              {editingField === "tone" && (
+                <Input
+                  placeholder="Happy, professional etc"
+                  value={tone}
+                  onChange={(e) => setTone(e.target.value)}
+                  className="h-12 text-base bg-white/90 rounded-full focus-visible:ring-yellow-400"
+                  autoFocus
+                  data-testid="input-tone"
                 />
               )}
 
