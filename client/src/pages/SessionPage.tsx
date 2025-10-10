@@ -87,9 +87,9 @@ export default function SessionPage() {
       />
 
       <main className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto p-4 space-y-6">
+        <div className="max-w-7xl mx-auto p-3 md:p-4 space-y-4 md:space-y-6 pb-6">
           <section>
-            <h2 className="text-lg font-semibold text-foreground mb-3">
+            <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 px-1">
               📝 What's Being Said
             </h2>
             <TranscriptDisplay transcripts={mockTranscripts} />

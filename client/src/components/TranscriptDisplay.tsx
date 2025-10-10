@@ -23,7 +23,7 @@ export default function TranscriptDisplay({ transcripts }: TranscriptDisplayProp
 
   if (transcripts.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 text-center">
+      <div className="flex items-center justify-center h-32 md:h-40 text-center px-4">
         <p className="text-muted-foreground text-sm">
           🎙️ Start recording to see your conversation transcript here
         </p>
@@ -32,7 +32,7 @@ export default function TranscriptDisplay({ transcripts }: TranscriptDisplayProp
   }
 
   return (
-    <ScrollArea className="h-64 w-full rounded-lg border bg-card p-4" ref={scrollRef}>
+    <ScrollArea className="h-56 md:h-64 w-full rounded-lg border bg-card p-3 md:p-4" ref={scrollRef}>
       <div className="space-y-3">
         {transcripts.map((line) => (
           <div
@@ -41,13 +41,13 @@ export default function TranscriptDisplay({ transcripts }: TranscriptDisplayProp
             data-testid={`transcript-line-${line.id}`}
           >
             <div
-              className={`max-w-[85%] px-4 py-2 rounded-2xl ${
+              className={`max-w-[90%] md:max-w-[85%] px-3 md:px-4 py-2 md:py-2.5 rounded-2xl ${
                 line.speaker === "user"
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-foreground"
               }`}
             >
-              <p className="text-sm leading-relaxed">{line.text}</p>
+              <p className="text-sm md:text-base leading-relaxed">{line.text}</p>
             </div>
             <span className="text-xs text-muted-foreground mt-1 px-2">
               {line.timestamp}

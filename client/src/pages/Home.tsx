@@ -30,32 +30,32 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-4">
-        <Card className="p-8 text-center space-y-6">
-          <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+    <div className="min-h-screen bg-background flex items-start md:items-center justify-center p-3 md:p-4">
+      <div className="w-full max-w-2xl space-y-3 py-4 md:py-0">
+        <Card className="p-6 md:p-8 text-center space-y-4 md:space-y-6">
+          <div className="space-y-2 md:space-y-3">
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
               COCO
             </h1>
-            <p className="text-lg text-muted-foreground font-medium">
+            <p className="text-base md:text-lg text-muted-foreground font-medium">
               Your Conversation Companion
             </p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground max-w-md mx-auto px-2">
               Get real-time suggestions to navigate your conversations with confidence ✨
             </p>
           </div>
 
-          <div className="flex justify-center">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center hover-elevate">
-              <Mic className="h-12 w-12 text-primary" />
+          <div className="flex justify-center py-2">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary/10 flex items-center justify-center hover-elevate">
+              <Mic className="h-10 w-10 md:h-12 md:w-12 text-primary" />
             </div>
           </div>
 
-          <div className="space-y-3 pt-4">
+          <div className="space-y-3 pt-2">
             <Button
               onClick={() => setLocation("/session")}
               size="lg"
-              className="w-full h-14 text-base"
+              className="w-full h-14 md:h-16 text-base md:text-lg font-semibold"
               data-testid="button-start-session"
             >
               <Mic className="mr-2 h-5 w-5" />
@@ -74,7 +74,7 @@ export default function Home() {
           <CollapsibleTrigger asChild>
             <Button
               variant="outline"
-              className="w-full h-12"
+              className="w-full h-12 md:h-14 text-sm md:text-base"
               data-testid="button-toggle-context"
             >
               {isContextOpen ? (
@@ -90,11 +90,11 @@ export default function Home() {
               )}
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            <Card className="p-6">
-              <div className="space-y-6">
+          <CollapsibleContent className="pt-3">
+            <Card className="p-4 md:p-6">
+              <div className="space-y-5 md:space-y-6">
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">
+                  <h3 className="text-base md:text-lg font-bold text-foreground mb-1.5 md:mb-2">
                     Help COCO Understand 💭
                   </h3>
                   <p className="text-sm text-muted-foreground">
@@ -110,10 +110,10 @@ export default function Home() {
                     <Input
                       id="event-details"
                       data-testid="input-event-details"
-                      placeholder="e.g., Team meeting, Coffee with a friend, Job interview"
+                      placeholder="e.g., Team meeting, Coffee chat..."
                       value={eventDetails}
                       onChange={(e) => setEventDetails(e.target.value)}
-                      className="h-12"
+                      className="h-12 text-base"
                     />
                   </div>
 
@@ -124,10 +124,10 @@ export default function Home() {
                     <Textarea
                       id="goals"
                       data-testid="input-goals"
-                      placeholder="What do you want to achieve in this conversation?"
+                      placeholder="What do you want to achieve?"
                       value={goals}
                       onChange={(e) => setGoals(e.target.value)}
-                      className="min-h-24 resize-none"
+                      className="min-h-20 resize-none text-base"
                     />
                   </div>
 
@@ -138,16 +138,16 @@ export default function Home() {
                     <Textarea
                       id="participants"
                       data-testid="input-participants"
-                      placeholder="Who will you be talking to? What's your relationship?"
+                      placeholder="Who will you be talking to?"
                       value={participants}
                       onChange={(e) => setParticipants(e.target.value)}
-                      className="min-h-24 resize-none"
+                      className="min-h-20 resize-none text-base"
                     />
                   </div>
 
                   <Button
                     onClick={handleSaveContext}
-                    className="w-full h-12"
+                    className="w-full h-12 md:h-14 text-base font-semibold"
                     data-testid="button-save-context"
                   >
                     Save Context
