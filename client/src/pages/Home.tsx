@@ -310,7 +310,7 @@ export default function Home() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex flex-col p-4"
       style={{
         backgroundImage: `url(${landingBg})`,
         backgroundSize: 'cover',
@@ -318,24 +318,33 @@ export default function Home() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="w-full max-w-md mx-auto">
-        <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
-          {/* Rive Animation */}
-          <div className="flex justify-center -mt-2">
-            <div className="w-40 h-40">
-              <RiveComponent />
-            </div>
-          </div>
+      {/* Top Header */}
+      <div className="w-full text-center pt-4 pb-2">
+        <p className="text-sm font-medium text-[#ffffff]" data-testid="text-header">
+          Conversation Companion
+        </p>
+      </div>
 
-          {/* Title */}
-          <div className="space-y-2">
-            <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
-              COCO
-            </h1>
-            <p className="text-sm text-[#ffffff]">
-              Your Conversation Companion
-            </p>
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-md mx-auto">
+          <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
+            {/* Rive Animation */}
+            <div className="flex justify-center -mt-2">
+              <div className="w-40 h-40">
+                <RiveComponent />
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
+                COCO
+              </h1>
+              <p className="text-sm text-[#ffffff]">
+                Your Conversation Companion
+              </p>
+            </div>
 
           {/* NAME ENTRY STATE */}
           {appState === "nameEntry" && (
@@ -531,6 +540,7 @@ export default function Home() {
             </div>
           )}
         </Card>
+      </div>
       </div>
     </div>
   );
