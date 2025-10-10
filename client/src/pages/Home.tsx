@@ -83,7 +83,7 @@ export default function Home() {
       <div className="w-full max-w-md mx-auto">
         <div className="space-y-6">
           {/* Main card with animation and title */}
-          <Card className="p-6 space-y-4 text-center bg-card/95 backdrop-blur">
+          <Card className="p-6 space-y-4 text-center bg-transparent">
             {/* Rive Animation or Fallback */}
             <div className="flex justify-center -mt-2">
               {riveError ? (
@@ -104,7 +104,7 @@ export default function Home() {
               <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
                 COCO
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#ffffff]">
                 Your Conversation Companion
               </p>
             </div>

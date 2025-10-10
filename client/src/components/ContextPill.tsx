@@ -59,7 +59,7 @@ export default function ContextPill({
         }`}
         data-testid={`pill-${testId}`}
       >
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 text-[#ffffff]">
           {isFilled && <Check className="h-4 w-4 text-primary" />}
           {label}
         </span>
