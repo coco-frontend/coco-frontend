@@ -14,7 +14,7 @@ import {
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [isContextOpen, setIsContextOpen] = useState(false);
+  const [isContextOpen, setIsContextOpen] = useState(true);
   const [hasContext, setHasContext] = useState(false);
   
   const [eventDetails, setEventDetails] = useState("");
