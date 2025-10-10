@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import SessionHeader from "@/components/SessionHeader";
-import TranscriptDisplay, { TranscriptLine } from "@/components/TranscriptDisplay";
+import { TranscriptLine } from "@/components/TranscriptDisplay";
 import SuggestionsPanel from "@/components/SuggestionsPanel";
 import { Suggestion } from "@/components/SuggestionCard";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SessionPage() {
@@ -16,6 +15,7 @@ export default function SessionPage() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   
   const recognitionRef = useRef<any>(null);
+  const isRecordingRef = useRef(false);
   const { toast } = useToast();
 
   // Initialize Speech Recognition
@@ -70,6 +70,14 @@ export default function SessionPage() {
         if (event.error === 'no-speech') {
           return;
         }
+        if (event.error === 'not-allowed') {
+          toast({
+            title: "Permission Denied",
+            description: "Microphone access was denied. Please allow microphone access to use COCO.",
+            variant: "destructive",
+          });
+          return;
+        }
         toast({
           title: "Recognition Error",
           description: `Error: ${event.error}`,
@@ -78,8 +86,12 @@ export default function SessionPage() {
       };
 
       recognition.onend = () => {
-        if (isRecording) {
-          recognition.start();
+        if (isRecordingRef.current) {
+          try {
+            recognition.start();
+          } catch (error) {
+            console.error('Failed to restart recognition:', error);
+          }
         }
       };
 
@@ -91,7 +103,7 @@ export default function SessionPage() {
         recognitionRef.current.stop();
       }
     };
-  }, [isRecording, toast]);
+  }, [toast]);
 
   // Fetch AI suggestions from backend
   const fetchSuggestions = async (currentTranscripts: TranscriptLine[]) => {
@@ -135,14 +147,21 @@ export default function SessionPage() {
     if (!recognitionRef.current) return;
 
     if (isRecording) {
+      isRecordingRef.current = false;
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
       try {
+        isRecordingRef.current = true;
         recognitionRef.current.start();
         setIsRecording(true);
       } catch (error) {
         console.error('Failed to start recording:', error);
+        toast({
+          title: "Recording Failed",
+          description: "Could not start recording. Please check your microphone permissions.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -167,16 +186,7 @@ export default function SessionPage() {
       />
 
       <main className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto p-3 md:p-4 space-y-4 md:space-y-6 pb-6">
-          <section>
-            <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 px-1">
-              📝 What's Being Said
-            </h2>
-            <TranscriptDisplay transcripts={transcripts} />
-          </section>
-
-          <Separator />
-
+        <div className="max-w-7xl mx-auto p-3 md:p-4 pb-6">
           <section>
             <SuggestionsPanel suggestions={suggestions} />
           </section>
