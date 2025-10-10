@@ -4,8 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useRive } from "@rive-app/react-canvas";
-import { Check, ArrowLeft, Mic, Pause, Square } from "lucide-react";
+import { Check, ArrowLeft, Mic, Pause, StopCircle, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import landingBg from "@assets/landing_background.webp";
 
@@ -23,6 +30,14 @@ interface TranscriptEntry {
   speaker: "user" | "coach";
   text: string;
   timestamp: string;
+}
+
+interface SessionSummary {
+  stars: string[];
+  wish: string;
+  filler_percentage: number;
+  takeaways: string[];
+  summary_bullets: string[];
 }
 
 export default function Home() {
@@ -44,6 +59,10 @@ export default function Home() {
   const [isPaused, setIsPaused] = useState(false);
   const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  // Feedback dialog state
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
 
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco-v3.riv",
@@ -338,15 +357,16 @@ export default function Home() {
         if (response.ok) {
           const summary = await response.json();
           console.log('Session summary:', summary);
-          // You can show the summary to the user here
-          toast({
-            title: "Session Completed",
-            description: `Stars: ${summary.stars.join(', ')}. Wish: ${summary.wish}`,
-            duration: 5000
-          });
+          setSessionSummary(summary);
+          setShowFeedback(true);
         }
       } catch (error) {
         console.error('Error getting session summary:', error);
+        toast({
+          title: "Error",
+          description: "Failed to get session summary",
+          variant: "destructive"
+        });
       }
     }
 
@@ -672,7 +692,7 @@ export default function Home() {
                   className="flex-1 h-12 text-sm font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white border-0"
                   data-testid="button-end-session"
                 >
-                  <Square className="h-4 w-4" />
+                  <StopCircle className="h-4 w-4" />
                   <span className="ml-2">End</span>
                 </Button>
               </div>
@@ -681,6 +701,101 @@ export default function Home() {
         </Card>
       </div>
       </div>
+
+      {/* Feedback Dialog */}
+      <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">Session Complete!</DialogTitle>
+            <DialogDescription className="text-center">
+              Here's your feedback from COCO
+            </DialogDescription>
+          </DialogHeader>
+
+          {sessionSummary && (
+            <div className="space-y-6 py-4">
+              {/* Stars */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                  Two Stars (What went well)
+                </h3>
+                <ul className="space-y-2">
+                  {sessionSummary.stars.map((star, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-yellow-500 mt-1">⭐</span>
+                      <span className="text-sm">{star}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Wish */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-blue-500" />
+                  One Wish (Area for improvement)
+                </h3>
+                <p className="text-sm bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  {sessionSummary.wish}
+                </p>
+              </div>
+
+              {/* Filler Percentage */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Filler Word Usage</h3>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Filler words (um, uh, like, etc.)</span>
+                    <span className="text-2xl font-bold text-purple-600">
+                      {sessionSummary.filler_percentage}%
+                    </span>
+                  </div>
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-purple-600 h-2 rounded-full transition-all"
+                      style={{ width: `${Math.min(sessionSummary.filler_percentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Takeaways */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Key Takeaways</h3>
+                <ul className="space-y-2">
+                  {sessionSummary.takeaways.map((takeaway, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">{takeaway}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Summary */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Conversation Summary</h3>
+                <ul className="space-y-2">
+                  {sessionSummary.summary_bullets.map((bullet, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-gray-500 mt-1">•</span>
+                      <span className="text-sm">{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Button
+                onClick={() => setShowFeedback(false)}
+                className="w-full bg-[#FFE8C9] hover:bg-[#FFE8C9]/90 text-black font-semibold"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
