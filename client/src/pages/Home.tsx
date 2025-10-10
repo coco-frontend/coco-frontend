@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRive } from "@rive-app/react-canvas";
 import { Check, ArrowLeft, Mic, Pause, Square } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +16,13 @@ interface Suggestion {
   text: string;
   type: string;
   priority: string;
+  timestamp?: string;
+}
+
+interface TranscriptEntry {
+  speaker: "user" | "coach";
+  text: string;
+  timestamp: string;
 }
 
 export default function Home() {
@@ -33,12 +41,8 @@ export default function Home() {
   // Recording state
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  
-  // Refs for speech recognition
-  const recognitionRef = useRef<any>(null);
-  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco.riv?v=2",
@@ -99,12 +103,50 @@ export default function Home() {
     setAppState("contextMenu");
   };
 
+  // Session and WebSocket refs
+  const sessionIdRef = useRef<string | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const transcriptEndRef = useRef<HTMLDivElement | null>(null);
+  const suggestionsEndRef = useRef<HTMLDivElement | null>(null);
+
   // Start recording
   const handleStartRecording = async () => {
-    // First, try to request microphone permission explicitly
+    // First, create a session with the backend
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${backendUrl}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          context: eventDetails || "General conversation",
+          goal: goals || "Have a great conversation",
+          user_name: userName
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create session');
+      }
+
+      const data = await response.json();
+      sessionIdRef.current = data.session_id;
+
+      console.log('Session created:', data.session_id);
+
+      // Now request microphone permission with specific settings for PCM
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16000
+        }
+      });
+      audioStreamRef.current = stream;
+
       if (rive) {
         const inputs = rive.stateMachineInputs("State Machine 1");
         const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
@@ -112,19 +154,97 @@ export default function Home() {
           voiceStartsTrigger.fire();
         }
       }
-      
+
       setAppState("recording");
       setIsRecording(true);
       setIsPaused(false);
-      
-      // Show mockup suggestion
-      setSuggestions([{
-        text: "Happy birthday to Jamie",
-        type: "tip",
-        priority: "high"
-      }]);
-      
-      startSpeechRecognition();
+
+      // Connect to WebSocket
+      const wsUrl = backendUrl.replace('http', 'ws');
+      const ws = new WebSocket(`${wsUrl}/ws/${data.session_id}`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log('WebSocket message:', message);
+
+        if (message.type === 'suggestion') {
+          // Add new suggestion to the list (keep last 3)
+          setSuggestions(prev => [{
+            text: message.text,
+            type: "tip",
+            priority: "high",
+            timestamp: message.timestamp
+          }, ...prev].slice(0, 3));
+        } else if (message.type === 'transcript') {
+          // Add to transcript entries
+          setTranscriptEntries(prev => [...prev, {
+            speaker: message.speaker,
+            text: message.text,
+            timestamp: message.timestamp
+          }]);
+        } else if (message.type === 'audio') {
+          // Play audio suggestion
+          try {
+            const audioData = atob(message.data);
+            const arrayBuffer = new Uint8Array(audioData.length);
+            for (let i = 0; i < audioData.length; i++) {
+              arrayBuffer[i] = audioData.charCodeAt(i);
+            }
+            const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.play();
+          } catch (error) {
+            console.error('Error playing audio:', error);
+          }
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to the backend. Please make sure the backend is running.",
+          variant: "destructive"
+        });
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket closed');
+      };
+
+      // Use Web Audio API to convert to PCM format
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      audioContextRef.current = audioContext;
+
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      audioProcessorRef.current = processor;
+
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+
+      processor.onaudioprocess = (e) => {
+        if (ws.readyState === WebSocket.OPEN && !isPaused) {
+          // Get PCM data
+          const inputData = e.inputBuffer.getChannelData(0);
+
+          // Convert Float32Array to Int16Array (PCM 16-bit)
+          const pcm16 = new Int16Array(inputData.length);
+          for (let i = 0; i < inputData.length; i++) {
+            const s = Math.max(-1, Math.min(1, inputData[i]));
+            pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+
+          // Send PCM audio to backend
+          ws.send(pcm16.buffer);
+        }
+      };
     } catch (error: any) {
       console.error('Microphone permission error:', error);
       
@@ -152,158 +272,109 @@ export default function Home() {
     }
   };
 
-  // Speech recognition setup
-  const startSpeechRecognition = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      toast({
-        title: "Not Supported",
-        description: "Speech recognition is not supported in this browser. Please use Chrome.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const SpeechRecognition = (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event: any) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      if (finalTranscript) {
-        setTranscript(prev => prev + finalTranscript);
-        generateSuggestions(finalTranscript);
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-      if (event.error === 'not-allowed') {
-        toast({
-          title: "Permission Denied",
-          description: "Please allow microphone access to use this feature.",
-          variant: "destructive",
-        });
-        // Stay in recording state to allow UI testing
-        setIsPaused(true);
-      }
-    };
-
-    recognition.onend = () => {
-      if (isRecording && !isPaused) {
-        restartTimeoutRef.current = setTimeout(() => {
-          if (recognitionRef.current && isRecording && !isPaused) {
-            try {
-              recognitionRef.current.start();
-            } catch (error) {
-              console.error('Failed to restart recognition:', error);
-            }
-          }
-        }, 100);
-      }
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  };
-
-  // Generate AI suggestions
-  const generateSuggestions = async (newTranscript: string) => {
-    try {
-      const response = await fetch('/api/suggestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          context: {
-            userName,
-            eventDetails,
-            goals,
-            participants,
-          },
-          transcript: newTranscript,
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 503) {
-          toast({
-            title: "API Key Missing",
-            description: "Please add OPENAI_API_KEY to enable AI suggestions.",
-          });
-        }
-        return;
-      }
-
-      const data = await response.json();
-      if (data.suggestions && data.suggestions.length > 0) {
-        setSuggestions(data.suggestions.slice(0, 3)); // Show top 3 suggestions
-      }
-    } catch (error) {
-      console.error('Error generating suggestions:', error);
-    }
-  };
-
   // Pause/Resume recording
   const handleTogglePause = () => {
     if (isPaused) {
       // Resume
       setIsPaused(false);
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
       }
     } else {
       // Pause
       setIsPaused(true);
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      if (restartTimeoutRef.current) {
-        clearTimeout(restartTimeoutRef.current);
+      if (audioContextRef.current && audioContextRef.current.state === 'running') {
+        audioContextRef.current.suspend();
       }
     }
   };
 
   // End session
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
     setIsRecording(false);
     setIsPaused(false);
-    
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-    
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
+
+    // Stop audio context and processor
+    if (audioProcessorRef.current) {
+      audioProcessorRef.current.disconnect();
+      audioProcessorRef.current = null;
     }
 
-    setTranscript("");
+    if (audioContextRef.current) {
+      await audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
+    // Stop audio stream
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
+    }
+
+    // Close WebSocket
+    if (wsRef.current) {
+      wsRef.current.send(JSON.stringify({ type: 'stop' }));
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Get session summary from backend
+    if (sessionIdRef.current) {
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+        const response = await fetch(`${backendUrl}/session/${sessionIdRef.current}/finish`, {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          const summary = await response.json();
+          console.log('Session summary:', summary);
+          // You can show the summary to the user here
+          toast({
+            title: "Session Completed",
+            description: `Stars: ${summary.stars.join(', ')}. Wish: ${summary.wish}`,
+            duration: 5000
+          });
+        }
+      } catch (error) {
+        console.error('Error getting session summary:', error);
+      }
+    }
+
+    setTranscriptEntries([]);
     setSuggestions([]);
+    sessionIdRef.current = null;
     setAppState("contextMenu");
   };
+
+  // Auto-scroll transcript when new entries arrive
+  useEffect(() => {
+    if (transcriptEndRef.current) {
+      transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [transcriptEntries]);
+
+  // Auto-scroll suggestions when new ones arrive
+  useEffect(() => {
+    if (suggestionsEndRef.current) {
+      suggestionsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [suggestions]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      if (audioProcessorRef.current) {
+        audioProcessorRef.current.disconnect();
       }
-      if (restartTimeoutRef.current) {
-        clearTimeout(restartTimeoutRef.current);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
       }
     };
   }, []);
@@ -491,7 +562,7 @@ export default function Home() {
 
           {/* RECORDING STATE */}
           {appState === "recording" && (
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 pt-2 w-full">
               {/* Recording indicator */}
               <div className="flex items-center justify-center gap-2 text-[#ffffff]">
                 <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'}`} />
@@ -500,40 +571,76 @@ export default function Home() {
                 </span>
               </div>
 
-              {/* Suggestions */}
-              {suggestions.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-[#ffffff]/70">Suggestions:</p>
-                  {suggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="bg-white text-black px-4 py-3 rounded-full text-sm"
-                      data-testid={`suggestion-${index}`}
-                    >
-                      {suggestion.text}
+              {/* Live Suggestions */}
+              <div className="space-y-2">
+                <p className="text-xs text-[#ffffff] font-semibold">💡 Live Coaching</p>
+                <ScrollArea className="h-24 w-full rounded-lg bg-white/10 p-3">
+                  {suggestions.length > 0 ? (
+                    <div className="space-y-2">
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={`${suggestion.timestamp}-${index}`}
+                          className="bg-[#e3f2fd] text-black px-3 py-2 rounded-lg text-sm"
+                          data-testid={`suggestion-${index}`}
+                        >
+                          <strong className="text-[#1976d2]">💡 Coach:</strong> {suggestion.text}
+                        </div>
+                      ))}
+                      <div ref={suggestionsEndRef} />
                     </div>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <p className="text-[#ffffff]/50 text-xs text-center py-2">
+                      Listening... suggestions will appear here
+                    </p>
+                  )}
+                </ScrollArea>
+              </div>
+
+              {/* Live Transcript */}
+              <div className="space-y-2">
+                <p className="text-xs text-[#ffffff] font-semibold">📝 Transcript</p>
+                <ScrollArea className="h-40 w-full rounded-lg bg-white/90 p-3">
+                  {transcriptEntries.length > 0 ? (
+                    <div className="space-y-2">
+                      {transcriptEntries.map((entry, index) => (
+                        <div
+                          key={`${entry.timestamp}-${index}`}
+                          className="text-sm"
+                        >
+                          <strong className={entry.speaker === 'user' ? 'text-[#1976d2]' : 'text-[#388e3c]'}>
+                            {entry.speaker === 'user' ? 'You' : 'Coach'}:
+                          </strong>{' '}
+                          <span className="text-black">{entry.text}</span>
+                        </div>
+                      ))}
+                      <div ref={transcriptEndRef} />
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-xs text-center py-4">
+                      Start speaking... your conversation will appear here
+                    </p>
+                  )}
+                </ScrollArea>
+              </div>
 
               {/* Control buttons */}
               <div className="flex gap-2">
                 <Button
                   onClick={handleTogglePause}
                   size="lg"
-                  className="flex-1 h-14 text-base font-semibold rounded-full bg-white/90 hover:bg-white text-black border-0"
+                  className="flex-1 h-12 text-sm font-semibold rounded-full bg-white/90 hover:bg-white text-black border-0"
                   data-testid="button-toggle-pause"
                 >
-                  {isPaused ? <Mic className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
+                  {isPaused ? <Mic className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                   <span className="ml-2">{isPaused ? 'Resume' : 'Pause'}</span>
                 </Button>
                 <Button
                   onClick={handleEndSession}
                   size="lg"
-                  className="flex-1 h-14 text-base font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white border-0"
+                  className="flex-1 h-12 text-sm font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white border-0"
                   data-testid="button-end-session"
                 >
-                  <Square className="h-5 w-5" />
+                  <Square className="h-4 w-4" />
                   <span className="ml-2">End</span>
                 </Button>
               </div>
