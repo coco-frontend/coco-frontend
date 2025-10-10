@@ -28,7 +28,7 @@ export default function ContextForm({ onSubmit, onSkip }: ContextFormProps) {
     <div className="w-full max-w-2xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Help Coco Understand 💭
+          Help COCO Understand 💭
         </h1>
         <p className="text-muted-foreground">
           Share some context so I can give you better, more personalized suggestions!

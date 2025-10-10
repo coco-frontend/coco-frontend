@@ -19,7 +19,7 @@ export default function SuggestionsPanel({ suggestions }: SuggestionsPanelProps)
   return (
     <div className="w-full">
       <h3 className="text-sm font-semibold text-foreground mb-3 px-4">
-        💡 Coco's Suggestions
+        💡 COCO's Suggestions
       </h3>
       <ScrollArea className="h-80 px-4">
         <div className="space-y-3 pb-4">

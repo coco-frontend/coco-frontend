@@ -18,7 +18,7 @@ export default function StartSessionCard({
       <Card className="p-8 text-center space-y-6">
         <div className="space-y-3">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-            Coco
+            COCO
           </h1>
           <p className="text-lg text-muted-foreground font-medium">
             Your Conversation Companion

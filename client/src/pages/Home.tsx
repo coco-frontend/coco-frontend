@@ -35,7 +35,7 @@ export default function Home() {
         <Card className="p-8 text-center space-y-6">
           <div className="space-y-3">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              Coco
+              COCO
             </h1>
             <p className="text-lg text-muted-foreground font-medium">
               Your Conversation Companion
@@ -95,7 +95,7 @@ export default function Home() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-foreground mb-2">
-                    Help Coco Understand 💭
+                    Help COCO Understand 💭
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     Share some context so I can give you better, more personalized suggestions!
