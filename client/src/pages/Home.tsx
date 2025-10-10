@@ -129,7 +129,7 @@ export default function Home() {
       // Show mockup suggestion after 5 seconds
       setTimeout(() => {
         setSuggestions([{
-          text: "industry standard 80k",
+          text: "London standard 80k",
           type: "tip",
           priority: "high"
         }]);
