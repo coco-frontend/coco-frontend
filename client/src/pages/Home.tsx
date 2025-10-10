@@ -101,7 +101,7 @@ export default function Home() {
 
             {/* Title */}
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold text-foreground tracking-tight">
+              <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
                 COCO
               </h1>
               <p className="text-sm text-muted-foreground">
