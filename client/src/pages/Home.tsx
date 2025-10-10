@@ -17,12 +17,13 @@ export default function Home() {
   const [isContextOpen, setIsContextOpen] = useState(true);
   const [hasContext, setHasContext] = useState(false);
   
+  const [introduction, setIntroduction] = useState("");
   const [eventDetails, setEventDetails] = useState("");
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
 
   const handleSaveContext = () => {
-    const context = { eventDetails, goals, participants };
+    const context = { introduction, eventDetails, goals, participants };
     console.log("Context saved:", context);
     localStorage.setItem("conversationContext", JSON.stringify(context));
     setHasContext(true);
@@ -103,6 +104,20 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="introduction" className="text-sm font-medium">
+                      Introduce Yourself
+                    </Label>
+                    <Textarea
+                      id="introduction"
+                      data-testid="input-introduction"
+                      placeholder="e.g., I'm a project manager with a background in..."
+                      value={introduction}
+                      onChange={(e) => setIntroduction(e.target.value)}
+                      className="min-h-20 resize-none text-base"
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="event-details" className="text-sm font-medium">
                       Event Details
