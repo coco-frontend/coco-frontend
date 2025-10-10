@@ -1,38 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Mic, ChevronDown, ChevronUp } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { useRive } from "@rive-app/react-canvas";
+import ContextPill from "@/components/ContextPill";
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [isContextOpen, setIsContextOpen] = useState(true);
-  const [hasContext, setHasContext] = useState(false);
-  
-  const [introduction, setIntroduction] = useState("");
+  const [userName, setUserName] = useState("");
   const [eventDetails, setEventDetails] = useState("");
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
 
-  const handleSaveContext = () => {
-    const context = { introduction, eventDetails, goals, participants };
-    console.log("Context saved:", context);
+  const { RiveComponent, rive } = useRive({
+    src: "/attached_assets/coco_1760095148906.riv",
+    stateMachines: "State Machine 1",
+    autoplay: true,
+    onLoad: () => {
+      if (rive) {
+        const inputs = rive.stateMachineInputs("State Machine 1");
+        const loadingTrigger = inputs?.find(i => i.name === "Loading");
+        if (loadingTrigger) {
+          loadingTrigger.fire();
+        }
+      }
+    },
+  });
+
+  // Load saved context from localStorage on mount
+  useEffect(() => {
+    const savedContext = localStorage.getItem("conversationContext");
+    if (savedContext) {
+      try {
+        const context = JSON.parse(savedContext);
+        if (context.userName) setUserName(context.userName);
+        if (context.eventDetails) setEventDetails(context.eventDetails);
+        if (context.goals) setGoals(context.goals);
+        if (context.participants) setParticipants(context.participants);
+      } catch (error) {
+        console.error("Failed to load saved context:", error);
+      }
+    }
+  }, []);
+
+  const hasContext = userName || eventDetails || goals || participants;
+
+  // Save context to localStorage whenever values change
+  useEffect(() => {
+    const context = { userName, eventDetails, goals, participants };
     localStorage.setItem("conversationContext", JSON.stringify(context));
-    setHasContext(true);
-    setIsContextOpen(false);
+  }, [userName, eventDetails, goals, participants]);
+
+  const handleStartSession = () => {
+    if (rive) {
+      const inputs = rive.stateMachineInputs("State Machine 1");
+      const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
+      if (voiceStartsTrigger) {
+        voiceStartsTrigger.fire();
+      }
+    }
+    setTimeout(() => {
+      setLocation("/session");
+    }, 300);
   };
 
   return (
     <div className="min-h-screen bg-background flex items-start md:items-center justify-center p-3 md:p-4">
-      <div className="w-full max-w-2xl space-y-3 py-4 md:py-0">
+      <div className="w-full max-w-2xl space-y-4 md:space-y-5 py-4 md:py-0">
         <Card className="p-6 md:p-8 text-center space-y-4 md:space-y-6">
           <div className="space-y-2 md:space-y-3">
             <h1 className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
@@ -47,19 +81,18 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center py-2">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary/10 flex items-center justify-center hover-elevate">
-              <Mic className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+            <div className="w-32 h-32 md:w-40 md:h-40">
+              <RiveComponent />
             </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <Button
-              onClick={() => setLocation("/session")}
+              onClick={handleStartSession}
               size="lg"
-              className="w-full h-14 md:h-16 text-base md:text-lg font-semibold"
+              className="w-full h-14 md:h-16 text-base md:text-lg font-semibold rounded-full"
               data-testid="button-start-session"
             >
-              <Mic className="mr-2 h-5 w-5" />
               Let's Talk!
             </Button>
           </div>
@@ -71,107 +104,56 @@ export default function Home() {
           )}
         </Card>
 
-        <Collapsible open={isContextOpen} onOpenChange={setIsContextOpen}>
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full h-12 md:h-14 text-sm md:text-base"
-              data-testid="button-toggle-context"
-            >
-              {isContextOpen ? (
-                <>
-                  <ChevronUp className="mr-2 h-4 w-4" />
-                  Hide Context
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="mr-2 h-4 w-4" />
-                  {hasContext ? "Update My Context" : "Set Context (Optional)"}
-                </>
-              )}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-3">
-            <Card className="p-4 md:p-6">
-              <div className="space-y-5 md:space-y-6">
-                <div>
-                  <h3 className="text-base md:text-lg font-bold text-foreground mb-1.5 md:mb-2">
-                    Customize your session
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Share some context so I can give you personalized suggestions!
-                  </p>
-                </div>
+        <Card className="p-4 md:p-6">
+          <div className="space-y-4 md:space-y-5">
+            <div className="text-center space-y-1">
+              <h3 className="text-base md:text-lg font-bold text-foreground">
+                Customize your session
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Share some context so I can give you personalized suggestions!
+              </p>
+            </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="introduction" className="text-sm font-medium">
-                      Introduce Yourself
-                    </Label>
-                    <Textarea
-                      id="introduction"
-                      data-testid="input-introduction"
-                      placeholder="e.g., I'm a project manager with a background in..."
-                      value={introduction}
-                      onChange={(e) => setIntroduction(e.target.value)}
-                      className="min-h-20 resize-none text-base"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="event-details" className="text-sm font-medium">
-                      Event Details
-                    </Label>
-                    <Input
-                      id="event-details"
-                      data-testid="input-event-details"
-                      placeholder="e.g., Team meeting, Coffee chat..."
-                      value={eventDetails}
-                      onChange={(e) => setEventDetails(e.target.value)}
-                      className="h-12 text-base"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="goals" className="text-sm font-medium">
-                      Your Goals
-                    </Label>
-                    <Textarea
-                      id="goals"
-                      data-testid="input-goals"
-                      placeholder="What do you want to achieve?"
-                      value={goals}
-                      onChange={(e) => setGoals(e.target.value)}
-                      className="min-h-20 resize-none text-base"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="participants" className="text-sm font-medium">
-                      Participants & Relationships
-                    </Label>
-                    <Textarea
-                      id="participants"
-                      data-testid="input-participants"
-                      placeholder="Who will you be talking to?"
-                      value={participants}
-                      onChange={(e) => setParticipants(e.target.value)}
-                      className="min-h-20 resize-none text-base"
-                    />
-                  </div>
-
-                  <Button
-                    onClick={handleSaveContext}
-                    className="w-full h-12 md:h-14 text-base font-semibold"
-                    data-testid="button-save-context"
-                  >
-                    Save Context
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </CollapsibleContent>
-        </Collapsible>
+            <div className="space-y-3">
+              <ContextPill
+                label="Your Name"
+                value={userName}
+                onChange={setUserName}
+                placeholder="e.g., Alex Johnson"
+                type="input"
+                testId="input-user-name"
+              />
+              
+              <ContextPill
+                label="Event Details"
+                value={eventDetails}
+                onChange={setEventDetails}
+                placeholder="e.g., Team meeting, Coffee chat..."
+                type="input"
+                testId="input-event-details"
+              />
+              
+              <ContextPill
+                label="Your Goals"
+                value={goals}
+                onChange={setGoals}
+                placeholder="What do you want to achieve?"
+                type="textarea"
+                testId="input-goals"
+              />
+              
+              <ContextPill
+                label="Participants & Relationships"
+                value={participants}
+                onChange={setParticipants}
+                placeholder="Who will you be talking to?"
+                type="textarea"
+                testId="input-participants"
+              />
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
