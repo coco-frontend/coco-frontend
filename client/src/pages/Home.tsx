@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRive } from "@rive-app/react-canvas";
+import { Mic } from "lucide-react";
 import ContextPill from "@/components/ContextPill";
 
 export default function Home() {
@@ -12,6 +13,8 @@ export default function Home() {
   const [goals, setGoals] = useState("");
   const [participants, setParticipants] = useState("");
 
+  const [riveError, setRiveError] = useState(false);
+  
   const { RiveComponent, rive } = useRive({
     src: "/attached_assets/coco_1760095148906.riv",
     stateMachines: "State Machine 1",
@@ -24,6 +27,9 @@ export default function Home() {
           loadingTrigger.fire();
         }
       }
+    },
+    onLoadError: () => {
+      setRiveError(true);
     },
   });
 
@@ -66,25 +72,33 @@ export default function Home() {
     <div 
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: 'url(/attached_assets/landing_background.webp), linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--background)), hsl(var(--accent) / 0.1))',
+        backgroundImage: 'url(/attached_assets/landing_background.webp), linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--accent) / 0.2) 50%, hsl(var(--chart-3) / 0.2) 100%)',
         backgroundSize: 'cover, cover',
         backgroundPosition: 'center, center',
         backgroundRepeat: 'no-repeat, no-repeat',
       }}
     >
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      {/* Semi-transparent overlay for depth */}
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-sm" />
       
       {/* Centered content container */}
       <div className="relative z-10 w-full max-w-md mx-auto">
         <div className="space-y-6">
           {/* Main card with animation and title */}
           <Card className="p-6 space-y-4 text-center bg-card/95 backdrop-blur">
-            {/* Rive Animation */}
+            {/* Rive Animation or Fallback */}
             <div className="flex justify-center -mt-2">
-              <div className="w-40 h-40">
-                <RiveComponent />
-              </div>
+              {riveError ? (
+                <div className="w-40 h-40 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mic className="w-12 h-12 text-primary" />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-40 h-40">
+                  <RiveComponent />
+                </div>
+              )}
             </div>
 
             {/* Title */}
