@@ -44,6 +44,7 @@ export default function Home() {
     src: "/attached_assets/coco-v3.riv",
     stateMachines: "State Machine 1",
     autoplay: true,
+    useOffscreenRenderer: true,
   });
 
   // Fire "Loading" trigger when rive instance becomes available
