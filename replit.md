@@ -7,17 +7,20 @@ COCO (Conversation Companion) is a real-time conversation assistant application 
 ## Recent Updates (October 10, 2025)
 
 ### ✅ Completed Features
-1. **Rive Animation Integration**: Replaced static microphone icon with animated Rive character that responds to user actions (Loading trigger on load, voice starts on session start)
-2. **Expandable Context Pills**: Redesigned context form with ChatGPT-style pill buttons that expand to show input fields with proper cancel/save behavior
-3. **OpenAI Backend Integration**: Implemented GPT-5 powered suggestion generation with graceful error handling for missing API keys
-4. **Complete End-to-End Flow**: Fully functional conversation flow from context setup → recording → AI suggestions → session end
+1. **Custom Background Image**: Mobile-friendly centered layout with user's landing_background.webp as clean background (no overlay or gradient)
+2. **Rive Animation Integration**: Updated to use coco.riv animation with graceful microphone icon fallback for compatibility issues
+3. **Expandable Context Pills**: ChatGPT-style pill buttons that expand to show input fields with proper cancel/save behavior
+4. **OpenAI Backend Integration**: GPT-5 powered suggestion generation with graceful error handling for missing API keys
+5. **Complete End-to-End Flow**: Fully functional conversation flow from context setup → recording → AI suggestions → session end
 
 ### 🔧 Technical Implementation
+- Background: Vite asset import system (`@assets/landing_background.webp`) for proper image loading
+- Animation: Rive file with fallback to microphone icon when file has compatibility issues
 - Web Speech API for browser-native audio transcription
 - localStorage for context persistence and rehydration
 - POST /api/suggestions endpoint for AI suggestion generation
 - Responsive error handling with toast notifications
-- Mobile-optimized touch targets and rounded-full pill design
+- Mobile-first centered layout (max-width: 28rem)
 
 ## User Preferences
 
