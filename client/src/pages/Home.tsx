@@ -153,7 +153,7 @@ export default function Home() {
               <Button
                 onClick={handleStartSession}
                 size="lg"
-                className="w-full h-14 text-base font-semibold rounded-full"
+                className="w-full h-14 text-base font-semibold rounded-full bg-[#FFE8C9] hover:bg-[#FFE8C9]/90"
                 data-testid="button-start-session"
               >
                 Let's Talk!
