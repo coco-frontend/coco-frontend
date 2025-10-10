@@ -44,20 +44,21 @@ export default function Home() {
     src: "/attached_assets/coco-v3.riv",
     stateMachines: "State Machine 1",
     autoplay: true,
-    onLoad: () => {
-      console.log("Rive loaded, rive instance:", rive);
-      if (rive) {
-        const inputs = rive.stateMachineInputs("State Machine 1");
-        console.log("State machine inputs:", inputs?.map(i => i.name));
-        
-        const loadingTrigger = inputs?.find(i => i.name === "Loading");
-        if (loadingTrigger) {
-          console.log("Firing Loading trigger");
-          loadingTrigger.fire();
-        }
-      }
-    },
   });
+
+  // Fire "Loading" trigger when rive instance becomes available
+  useEffect(() => {
+    if (rive) {
+      const inputs = rive.stateMachineInputs("State Machine 1");
+      console.log("State machine inputs:", inputs?.map(i => i.name));
+      
+      const loadingTrigger = inputs?.find(i => i.name === "Loading");
+      if (loadingTrigger) {
+        console.log("Firing Loading trigger");
+        loadingTrigger.fire();
+      }
+    }
+  }, [rive]);
 
   // Load saved context from localStorage on mount
   useEffect(() => {
