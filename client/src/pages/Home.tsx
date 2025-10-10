@@ -126,12 +126,14 @@ export default function Home() {
       setIsRecording(true);
       setIsPaused(false);
       
-      // Show mockup suggestion
-      setSuggestions([{
-        text: "Happy birthday to Jamie",
-        type: "tip",
-        priority: "high"
-      }]);
+      // Show mockup suggestion after 5 seconds
+      setTimeout(() => {
+        setSuggestions([{
+          text: "industry standard 80k",
+          type: "tip",
+          priority: "high"
+        }]);
+      }, 5000);
       
       startSpeechRecognition();
     } catch (error: any) {
