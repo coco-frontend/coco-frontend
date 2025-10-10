@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRive } from "@rive-app/react-canvas";
 import { Mic } from "lucide-react";
 import ContextPill from "@/components/ContextPill";
+import landingBg from "@assets/landing_background.webp";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -72,17 +73,14 @@ export default function Home() {
     <div 
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: 'url(/attached_assets/landing_background.webp), linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--accent) / 0.2) 50%, hsl(var(--chart-3) / 0.2) 100%)',
-        backgroundSize: 'cover, cover',
-        backgroundPosition: 'center, center',
-        backgroundRepeat: 'no-repeat, no-repeat',
+        backgroundImage: `url(${landingBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Semi-transparent overlay for depth */}
-      <div className="absolute inset-0 bg-background/40 backdrop-blur-sm" />
-      
       {/* Centered content container */}
-      <div className="relative z-10 w-full max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto">
         <div className="space-y-6">
           {/* Main card with animation and title */}
           <Card className="p-6 space-y-4 text-center bg-card/95 backdrop-blur">
