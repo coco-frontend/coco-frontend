@@ -7,23 +7,25 @@ COCO (Conversation Companion) is a real-time conversation assistant application 
 ## Recent Updates (October 10, 2025)
 
 ### ✅ Completed Features
-1. **Custom Background Image**: Mobile-friendly centered layout with user's landing_background.webp as clean background (no overlay or gradient)
-2. **Rive Animation Integration**: Updated to use coco.riv animation with graceful microphone icon fallback for compatibility issues
-3. **Expandable Context Pills**: ChatGPT-style pill buttons that expand to show input fields with proper cancel/save behavior
-4. **OpenAI Backend Integration**: GPT-5 powered suggestion generation with graceful error handling for missing API keys
-5. **Complete End-to-End Flow**: Fully functional conversation flow from context setup → recording → AI suggestions → session end
+1. **Single-Screen State Machine**: Redesigned to use one page with state-based UI transitions (name entry → context menu → individual editing → recording)
+2. **Custom Background Image**: Mobile-friendly centered layout with user's landing_background.webp as clean background (no overlay or gradient)
+3. **Rive Animation Integration**: Updated to use coco.riv animation displayed throughout all states
+4. **Streamlined Context Flow**: Name input first, then context pills appear with individual field editing and back button
+5. **Recording State UI**: Shows recording indicator, pause/resume, and end session buttons with white suggestion pills
+6. **OpenAI Backend Integration**: GPT-5 powered suggestion generation with graceful error handling for missing API keys
 
 ### 🔧 Technical Implementation
-- Background: Vite asset import system (`@assets/landing_background.webp`) for proper image loading
-- Animation: Rive file with fallback to microphone icon when file has compatibility issues
-- Transparent Design: Card component with no borders/shadows (bg-transparent border-0 shadow-none)
-- White Typography: All text elements use #ffffff for visibility over background
-- Custom Button Styling: Cream/beige CTA button (#FFE8C9) with black text, borderless
-- Web Speech API for browser-native audio transcription
-- localStorage for context persistence and rehydration
-- POST /api/suggestions endpoint for AI suggestion generation
-- Responsive error handling with toast notifications
-- Mobile-first centered layout (max-width: 28rem)
+- **Single-Screen Architecture**: State machine with 4 states (nameEntry, contextMenu, editingContext, recording) - all on one page
+- **Background**: Vite asset import system (`@assets/landing_background.webp`) for proper image loading
+- **Animation**: Rive file displayed across all states
+- **Transparent Design**: Card component with no borders/shadows (bg-transparent border-0 shadow-none)
+- **White Typography**: All text elements use #ffffff for visibility over background
+- **Custom Button Styling**: Cream/beige CTA button (#FFE8C9) with black text, borderless
+- **Web Speech API**: Browser-native audio transcription with graceful permission handling
+- **localStorage**: Context persistence and rehydration across sessions
+- **POST /api/suggestions**: AI suggestion generation endpoint
+- **Responsive error handling**: Toast notifications for user feedback
+- **Mobile-first layout**: Centered design (max-width: 28rem)
 
 ## User Preferences
 
@@ -36,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 **Framework & Build System**
 - React 18 with TypeScript for type-safe component development
 - Vite as the build tool and development server for fast HMR and optimized production builds
-- Wouter for lightweight client-side routing (/ → home, /session → active conversation)
+- Single-page application with state machine architecture (no routing)
 
 **UI Component System**
 - Shadcn/ui component library (New York style variant) providing Radix UI primitives
@@ -50,33 +52,41 @@ Preferred communication style: Simple, everyday language.
 - LocalStorage for persisting conversation context between sessions
 
 **Key Features**
+- **State Machine Architecture**: Single-screen app with 4 distinct states
+  - nameEntry: Initial name input and confirmation
+  - contextMenu: Context pills selection and "Let's Talk!" button
+  - editingContext: Individual field editing with back navigation
+  - recording: Active conversation with AI suggestions
+  
 - **Speech Recognition**: Browser-native Web Speech API (webkitSpeechRecognition) for real-time transcription
   - Continuous mode with interim results
   - Automatic restart on connection drop (using refs to avoid stale closures)
-  - Proper error handling for permissions and browser compatibility
+  - Graceful permission handling (stays in recording state when denied)
   
-- **Rive Animations**: Interactive character animations for visual engagement
+- **Rive Animations**: Interactive character animations displayed across all states
   - Loading trigger fires on page load
   - Voice starts trigger fires when starting a session
-  - Located at /attached_assets/coco_1760095148906.riv
+  - Located at /attached_assets/coco.riv
   
-- **Context Management**: Expandable pill-based input system
-  - Your Name, Event Details, Your Goals, Participants & Relationships
-  - Local state staging for edits (only commits on Save, discards on Cancel)
+- **Context Management**: Streamlined input flow
+  - Name entry first, then context pills (Event Details, Goals, Participants)
+  - Individual field editing with dedicated state
   - Auto-save to localStorage, rehydrates on page load
   - Visual checkmarks indicate filled pills
   
 - **AI Suggestions**: Real-time conversation guidance powered by OpenAI GPT-5
   - Contextual suggestions based on user profile and conversation transcript
+  - Display as white pills during recording state
   - Categorized by type (question, tip, response) and priority (high, normal)
   - Graceful degradation when API key is missing
 
 **Mobile-First Design**
 - Touch-optimized UI with 44px+ tap targets
+- Transparent card design showcasing background image
 - Rounded-full pill buttons for modern aesthetic
-- Responsive breakpoints (768px mobile threshold)
-- Fixed positioning for session controls
-- Distraction-free suggestion panel (transcript hidden)
+- All white typography for visibility over background
+- Cream/beige CTA button (#FFE8C9) with black text
+- Centered layout (max-width: 28rem) for mobile focus
 
 ### Backend Architecture
 
@@ -151,9 +161,8 @@ npm run dev
 - Server logs show API key status on startup
 
 **Key Files**
-- `client/src/pages/Home.tsx`: Landing page with Rive animation and context pills
-- `client/src/pages/SessionPage.tsx`: Active conversation page with recording and suggestions
-- `client/src/components/ContextPill.tsx`: Reusable expandable pill component
+- `client/src/pages/Home.tsx`: Single-screen app with state machine (nameEntry → contextMenu → editingContext → recording)
+- `client/src/App.tsx`: Root component with single route (/)
 - `server/routes.ts`: API endpoint for AI suggestions
 - `design_guidelines.md`: UI/UX design specifications
 
