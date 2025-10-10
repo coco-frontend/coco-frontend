@@ -41,7 +41,7 @@ export default function Home() {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco.riv",
+    src: "/attached_assets/coco.riv?v=2",
     stateMachines: "State Machine 1",
     autoplay: true,
     onLoad: () => {

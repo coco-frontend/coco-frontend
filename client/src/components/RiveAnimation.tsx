@@ -14,7 +14,7 @@ export default function RiveAnimation({
   onLoad
 }: RiveAnimationProps) {
   const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco_1760095148906.riv",
+    src: "/attached_assets/coco.riv?v=2",
     stateMachines: stateMachine,
     artboard: artboard,
     autoplay: autoplay,
