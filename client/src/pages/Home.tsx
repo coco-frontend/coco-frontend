@@ -100,27 +100,56 @@ export default function Home() {
   };
 
   // Start recording
-  const handleStartRecording = () => {
-    if (rive) {
-      const inputs = rive.stateMachineInputs("State Machine 1");
-      const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
-      if (voiceStartsTrigger) {
-        voiceStartsTrigger.fire();
+  const handleStartRecording = async () => {
+    // First, try to request microphone permission explicitly
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      if (rive) {
+        const inputs = rive.stateMachineInputs("State Machine 1");
+        const voiceStartsTrigger = inputs?.find(i => i.name === "voice starts");
+        if (voiceStartsTrigger) {
+          voiceStartsTrigger.fire();
+        }
+      }
+      
+      setAppState("recording");
+      setIsRecording(true);
+      setIsPaused(false);
+      
+      // Show mockup suggestion
+      setSuggestions([{
+        text: "Happy birthday to Jamie",
+        type: "tip",
+        priority: "high"
+      }]);
+      
+      startSpeechRecognition();
+    } catch (error: any) {
+      console.error('Microphone permission error:', error);
+      
+      // Show detailed instructions based on the error
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast({
+          title: "Microphone Access Blocked",
+          description: "Please click the 🔒 or ⓘ icon in your browser's address bar and allow microphone access, then try again.",
+          variant: "destructive",
+          duration: 10000,
+        });
+      } else if (error.name === 'NotFoundError') {
+        toast({
+          title: "No Microphone Found",
+          description: "Please connect a microphone to use this feature.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Microphone Error",
+          description: error.message || "Could not access microphone. Please check your browser settings.",
+          variant: "destructive",
+        });
       }
     }
-    
-    setAppState("recording");
-    setIsRecording(true);
-    setIsPaused(false);
-    
-    // Show mockup suggestion
-    setSuggestions([{
-      text: "Happy birthday to Jamie",
-      type: "tip",
-      priority: "high"
-    }]);
-    
-    startSpeechRecognition();
   };
 
   // Speech recognition setup
