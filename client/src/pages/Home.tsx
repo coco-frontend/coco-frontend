@@ -347,7 +347,7 @@ export default function Home() {
                 COCO
               </h1>
               <p className="text-sm text-[#ffffff]">
-                Your Conversation Companion
+                Say a bit more about your chat!
               </p>
             </div>
 
