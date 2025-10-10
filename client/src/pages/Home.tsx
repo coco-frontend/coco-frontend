@@ -338,7 +338,7 @@ export default function Home() {
           <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
             {/* Rive Animation */}
             <div className="flex justify-center -mt-2">
-              <div className="w-64 h-64">
+              <div className="w-80 h-80">
                 <RiveComponent />
               </div>
             </div>
