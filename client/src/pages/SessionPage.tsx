@@ -113,17 +113,30 @@ export default function SessionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transcripts: currentTranscripts,
+          transcript: currentTranscripts,
           context: context ? JSON.parse(context) : null,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setSuggestions(data.suggestions);
+        setSuggestions(data.suggestions || []);
+      } else {
+        const error = await response.json();
+        console.error('Failed to fetch suggestions:', error);
+        toast({
+          title: "Suggestion Error",
+          description: "Could not generate suggestions. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Failed to fetch suggestions:', error);
+      toast({
+        title: "Network Error",
+        description: "Could not connect to the server. Please check your connection.",
+        variant: "destructive",
+      });
     }
   };
 
