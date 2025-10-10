@@ -95,7 +95,7 @@ export default function Home() {
               <div className="space-y-5 md:space-y-6">
                 <div>
                   <h3 className="text-base md:text-lg font-bold text-foreground mb-1.5 md:mb-2">
-                    Help COCO Understand 💭
+                    Introduce your session
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     Share some context so I can give you personalized suggestions!
