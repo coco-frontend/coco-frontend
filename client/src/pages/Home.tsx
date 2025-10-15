@@ -64,17 +64,23 @@ export default function Home() {
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
 
   const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco.riv?v=2",
+    src: "/attached_assets/coco.riv?v=3",
     stateMachines: "State Machine 1",
     autoplay: true,
     onLoad: () => {
+      console.log('✅ Rive animation loaded successfully');
       if (rive) {
         const inputs = rive.stateMachineInputs("State Machine 1");
+        console.log('Rive state machine inputs:', inputs);
         const loadingTrigger = inputs?.find(i => i.name === "Loading");
         if (loadingTrigger) {
           loadingTrigger.fire();
+          console.log('Fired Loading trigger');
         }
       }
+    },
+    onLoadError: (error) => {
+      console.error('❌ Rive loading error:', error);
     },
   });
 
@@ -422,8 +428,14 @@ export default function Home() {
           <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
             {/* Rive Animation */}
             <div className="flex justify-center -mt-2">
-              <div className="w-40 h-40">
-                <RiveComponent />
+              <div className="w-40 h-40 relative overflow-hidden">
+                {rive ? (
+                  <RiveComponent className="w-full h-full" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/50 text-xs">
+                    {/* Loading... */}
+                  </div>
+                )}
               </div>
             </div>
 
