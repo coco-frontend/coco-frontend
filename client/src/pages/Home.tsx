@@ -65,10 +65,25 @@ export default function Home() {
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
 
   const { RiveComponent, rive } = useRive({
-    src: "/attached_assets/coco-v3.riv",
+    src: "/attached_assets/coco.riv?v=3",
     stateMachines: "State Machine 1",
     autoplay: true,
     useOffscreenRenderer: true,
+    onLoad: () => {
+      console.log('✅ Rive animation loaded successfully');
+      if (rive) {
+        const inputs = rive.stateMachineInputs("State Machine 1");
+        console.log('Rive state machine inputs:', inputs);
+        const loadingTrigger = inputs?.find(i => i.name === "Loading");
+        if (loadingTrigger) {
+          loadingTrigger.fire();
+          console.log('Fired Loading trigger');
+        }
+      }
+    },
+    onLoadError: (error) => {
+      console.error('❌ Rive loading error:', error);
+    },
   });
 
   // Fire "Loading" trigger when rive instance becomes available
@@ -432,7 +447,13 @@ export default function Home() {
             {/* Rive Animation */}
             <div className="flex justify-center -mt-2">
               <div className="w-80 h-80">
-                <RiveComponent />
+                {rive ? (
+                  <RiveComponent className="w-full h-full" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/50 text-xs">
+                    {/* Loading... */}
+                  </div>
+                )}
               </div>
             </div>
 
