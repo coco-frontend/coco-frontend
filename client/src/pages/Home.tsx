@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useRive } from "@rive-app/react-canvas";
-import { Check, ArrowLeft, Mic, Pause, StopCircle, Star } from "lucide-react";
+import { Check, ArrowLeft, Mic, Pause, StopCircle, Star, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import landingBg from "@assets/landing_background.webp";
 
@@ -59,6 +59,7 @@ export default function Home() {
   const [isPaused, setIsPaused] = useState(false);
   const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isEndingSession, setIsEndingSession] = useState(false);
 
   // Feedback dialog state
   const [showFeedback, setShowFeedback] = useState(false);
@@ -349,6 +350,7 @@ export default function Home() {
 
   // End session
   const handleEndSession = async () => {
+    setIsEndingSession(true);
     setIsRecording(false);
     setIsPaused(false);
 
@@ -397,6 +399,8 @@ export default function Home() {
           description: "Failed to get session summary",
           variant: "destructive"
         });
+      } finally {
+        setIsEndingSession(false);
       }
     }
 
@@ -439,8 +443,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div 
-      className="min-h-screen flex flex-col p-4"
+    <div
+      className="min-h-screen flex flex-col p-4 bg-black"
       style={{
         backgroundImage: `url(${landingBg})`,
         backgroundSize: 'cover',
@@ -650,13 +654,28 @@ export default function Home() {
             <div className="space-y-3 pt-2 w-full">
               {/* Recording indicator */}
               <div className="flex items-center justify-center gap-2 text-[#ffffff]">
-                <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'}`} />
-                <span className="text-sm font-medium">
-                  {isPaused ? 'Paused' : 'Recording...'}
-                </span>
+                {!isEndingSession && (
+                  <>
+                    <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'}`} />
+                    <span className="text-sm font-medium">
+                      {isPaused ? 'Paused' : 'Recording...'}
+                    </span>
+                  </>
+                )}
               </div>
 
+              {/* Writing summary indicator */}
+              {isEndingSession && (
+                <div className="flex flex-col items-center justify-center gap-3 py-8">
+                  <Loader2 className="h-12 w-12 animate-spin text-[#FFE8C9]" />
+                  <span className="text-xl font-semibold text-[#ffffff]">Writing feedback...</span>
+
+                  <div className="h-20 w-full" />
+                </div>
+              )}
+
               {/* Live Suggestions */}
+              {!isEndingSession && (
               <div className="space-y-2">
                 <p className="text-xs text-[#ffffff] font-semibold">💡 Live Coaching</p>
                 <ScrollArea className="h-24 w-full rounded-lg bg-white/10 p-3">
@@ -680,8 +699,10 @@ export default function Home() {
                   )}
                 </ScrollArea>
               </div>
+              )}
 
               {/* Live Transcript */}
+              {!isEndingSession && (
               <div className="space-y-2">
                 <p className="text-xs text-[#ffffff] font-semibold">📝 Transcript</p>
                 <ScrollArea className="h-40 w-full rounded-lg bg-white/90 p-3">
@@ -707,8 +728,10 @@ export default function Home() {
                   )}
                 </ScrollArea>
               </div>
+              )}
 
               {/* Control buttons */}
+              {!isEndingSession && (
               <div className="flex gap-2">
                 <Button
                   onClick={handleTogglePause}
@@ -721,14 +744,20 @@ export default function Home() {
                 </Button>
                 <Button
                   onClick={handleEndSession}
+                  disabled={isEndingSession}
                   size="lg"
-                  className="flex-1 h-12 text-sm font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white border-0"
+                  className="flex-1 h-12 text-sm font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white border-0 disabled:opacity-50"
                   data-testid="button-end-session"
                 >
-                  <StopCircle className="h-4 w-4" />
+                  {isEndingSession ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <StopCircle className="h-4 w-4" />
+                  )}
                   <span className="ml-2">End</span>
                 </Button>
               </div>
+              )}
             </div>
           )}
           </Card>
