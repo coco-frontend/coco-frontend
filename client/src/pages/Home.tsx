@@ -188,7 +188,9 @@ export default function Home() {
         body: JSON.stringify({
           context: eventDetails || "General conversation",
           goal: goals || "Have a great conversation",
-          user_name: userName
+          user_name: userName,
+          participants: participants || "",
+          tone: tone || ""
         })
       });
 
@@ -457,25 +459,28 @@ export default function Home() {
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md mx-auto">
           <Card className="p-6 space-y-4 text-center bg-transparent border-0 shadow-none">
+            {/* Vertical spacing for non-name entry states */}
+            {appState !== "nameEntry" && <div className="h-[150px]" />}
+
             {/* Rive Animation */}
-            <div className="flex justify-center -mt-2">
-              <div className="w-80 h-80">
-                <RiveComponent className="w-full h-full" />
-              </div>
+          <div className="flex justify-center -mt-2">
+            <div className="w-80 h-80">
+              <RiveComponent className="w-full h-full" />
             </div>
+          </div>
 
             {/* Title */}
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
-                COCO
-              </h1>
-              <p className="text-sm text-[#ffffff]">
-                Your conversation coach 
-              </p>
-            </div>
+            <h1 className="text-5xl font-bold text-[#ffffff] tracking-tight">
+              COCO
+            </h1>
+            <p className="text-sm text-[#ffffff]">
+              Your conversation coach
+            </p>
+          </div>
 
-          {/* NAME ENTRY STATE */}
-          {appState === "nameEntry" && (
+                      {/* NAME ENTRY STATE */}
+            {appState === "nameEntry" && (
             <div className="space-y-4 pt-2">
               <Input
                 placeholder="What's your name?"
@@ -726,8 +731,8 @@ export default function Home() {
               </div>
             </div>
           )}
-        </Card>
-      </div>
+          </Card>
+        </div>
       </div>
 
       {/* Feedback Dialog */}
