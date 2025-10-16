@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useRive } from "@rive-app/react-canvas";
-import { Check, ArrowLeft, Mic, Pause, StopCircle, Star, Loader2 } from "lucide-react";
+import { Check, ArrowLeft, Mic, Pause, StopCircle, Star, Loader2, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import landingBg from "@assets/landing_background.webp";
 
@@ -141,6 +141,22 @@ export default function Home() {
         console.error("Failed to load saved context:", error);
       }
     }
+  }, []);
+
+  // Wake up Render instance on page load
+  useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+    // Call health check endpoint to spin up the Render instance
+    fetch(`${backendUrl}/health`)
+      .then(response => {
+        if (response.ok) {
+          console.log('✅ Backend is ready');
+        }
+      })
+      .catch(error => {
+        console.log('⏳ Backend is waking up...', error);
+      });
   }, []);
 
   // Save context to localStorage whenever values change
@@ -523,49 +539,61 @@ export default function Home() {
               <Button
                 variant="outline"
                 onClick={() => handleEditField("eventDetails")}
-                className="w-full h-12 justify-between rounded-full text-sm font-medium border-0"
+                className={`w-full h-12 justify-between rounded-full text-sm font-medium ${eventDetails ? 'border-0' : 'border-2 border-[#FFE8C9]/50 bg-[#FFE8C9]/10'}`}
                 data-testid="pill-event-details"
               >
                 <span className="flex items-center gap-2 text-[#ffffff]">
                   {eventDetails && <Check className="h-4 w-4 text-primary" />}
-                  Conversation Details
+                  <span className={eventDetails ? '' : 'text-[#FFE8C9]'}>
+                    {eventDetails ? 'Conversation Details' : 'Conversation Details'}
+                  </span>
                 </span>
+                <ChevronRight className="h-4 w-4 text-[#FFE8C9]/70" />
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => handleEditField("goals")}
-                className="w-full h-12 justify-between rounded-full text-sm font-medium border-0"
+                className={`w-full h-12 justify-between rounded-full text-sm font-medium ${goals ? 'border-0' : 'border-2 border-[#FFE8C9]/50 bg-[#FFE8C9]/10'}`}
                 data-testid="pill-goals"
               >
                 <span className="flex items-center gap-2 text-[#ffffff]">
                   {goals && <Check className="h-4 w-4 text-primary" />}
-                  Your Goals
+                  <span className={goals ? '' : 'text-[#FFE8C9]'}>
+                    {goals ? 'Your Goals' : 'Your Goals'}
+                  </span>
                 </span>
+                <ChevronRight className="h-4 w-4 text-[#FFE8C9]/70" />
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => handleEditField("participants")}
-                className="w-full h-12 justify-between rounded-full text-sm font-medium border-0"
+                className={`w-full h-12 justify-between rounded-full text-sm font-medium ${participants ? 'border-0' : 'border-2 border-[#FFE8C9]/50 bg-[#FFE8C9]/10'}`}
                 data-testid="pill-participants"
               >
                 <span className="flex items-center gap-2 text-[#ffffff]">
                   {participants && <Check className="h-4 w-4 text-primary" />}
-                  Participants & Relationships
+                  <span className={participants ? '' : 'text-[#FFE8C9]'}>
+                    {participants ? 'Participants & Relationships' : 'Participants & Relationships'}
+                  </span>
                 </span>
+                <ChevronRight className="h-4 w-4 text-[#FFE8C9]/70" />
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => handleEditField("tone")}
-                className="w-full h-12 justify-between rounded-full text-sm font-medium border-0"
+                className={`w-full h-12 justify-between rounded-full text-sm font-medium ${tone ? 'border-0' : 'border-2 border-[#FFE8C9]/50 bg-[#FFE8C9]/10'}`}
                 data-testid="pill-tone"
               >
                 <span className="flex items-center gap-2 text-[#ffffff]">
                   {tone && <Check className="h-4 w-4 text-primary" />}
-                  Tone
+                  <span className={tone ? '' : 'text-[#FFE8C9]'}>
+                    {tone ? 'Tone' : 'Tone'}
+                  </span>
                 </span>
+                <ChevronRight className="h-4 w-4 text-[#FFE8C9]/70" />
               </Button>
 
               <div className="pt-2">
