@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rive Animation Test</title>
+    <script src="https://unpkg.com/@rive-app/canvas@2.7.0"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .viewer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        canvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: white;
+        }
+        h2 {
+            margin: 0;
+            font-size: 14px;
+            color: #888;
+        }
+        .info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 600px;
+        }
+        .info pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>COCO Rive Animation Test</h1>
+
+    <div class="container">
+        <div class="viewer">
+            <h2>Small (100x100)</h2>
+            <canvas id="canvas-small" width="100" height="100"></canvas>
+        </div>
+
+        <div class="viewer">
+            <h2>Medium (200x200)</h2>
+            <canvas id="canvas-medium" width="200" height="200"></canvas>
+        </div>
+
+        <div class="viewer">
+            <h2>Large (320x320 - Current Size)</h2>
+            <canvas id="canvas-large" width="320" height="320"></canvas>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>Animation Info:</h3>
+        <pre id="info">Loading...</pre>
+    </div>
+
+    <script>
+        const riveInstances = [];
+
+        async function loadRive(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+
+            const r = new rive.Rive({
+                src: '/attached_assets/coco.riv',
+                canvas: canvas,
+                autoplay: true,
+                stateMachines: 'State Machine 1',
+                onLoad: () => {
+                    console.log(`✅ Loaded on ${canvasId}`);
+                    r.resizeDrawingSurfaceToCanvas();
+
+                    // Display info for the first instance
+                    if (canvasId === 'canvas-large') {
+                        const artboard = r.artboard;
+                        const stateMachine = r.stateMachineInputs('State Machine 1');
+
+                        const info = {
+                            'Artboard Name': artboard?.name || 'N/A',
+                            'Artboard Size': `${artboard?.bounds.maxX}x${artboard?.bounds.maxY}`,
+                            'State Machine': 'State Machine 1',
+                            'Available Inputs': stateMachine?.map(i => `${i.name} (${i.type})`).join(', ') || 'None'
+                        };
+
+                        document.getElementById('info').textContent = JSON.stringify(info, null, 2);
+
+                        // Try firing the Loading trigger
+                        const loadingTrigger = stateMachine?.find(i => i.name === 'Loading');
+                        if (loadingTrigger) {
+                            console.log('Firing Loading trigger');
+                            loadingTrigger.fire();
+                        }
+                    }
+                },
+                onLoadError: (error) => {
+                    console.error(`❌ Error on ${canvasId}:`, error);
+                    document.getElementById('info').textContent = `Error: ${error}`;
+                }
+            });
+
+            riveInstances.push(r);
+        }
+
+        // Load animations on all canvases
+        loadRive('canvas-small', 100);
+        loadRive('canvas-medium', 200);
+        loadRive('canvas-large', 320);
+    </script>
+</body>
+</html>

@@ -68,18 +68,8 @@ export default function Home() {
     src: "/attached_assets/coco.riv?v=3",
     stateMachines: "State Machine 1",
     autoplay: true,
-    useOffscreenRenderer: true,
     onLoad: () => {
       console.log('✅ Rive animation loaded successfully');
-      if (rive) {
-        const inputs = rive.stateMachineInputs("State Machine 1");
-        console.log('Rive state machine inputs:', inputs);
-        const loadingTrigger = inputs?.find(i => i.name === "Loading");
-        if (loadingTrigger) {
-          loadingTrigger.fire();
-          console.log('Fired Loading trigger');
-        }
-      }
     },
     onLoadError: (error) => {
       console.error('❌ Rive loading error:', error);
@@ -91,7 +81,7 @@ export default function Home() {
     if (rive) {
       const inputs = rive.stateMachineInputs("State Machine 1");
       console.log("State machine inputs:", inputs?.map(i => i.name));
-      
+
       const loadingTrigger = inputs?.find(i => i.name === "Loading");
       if (loadingTrigger) {
         console.log("Firing Loading trigger");
@@ -99,6 +89,38 @@ export default function Home() {
       }
     }
   }, [rive]);
+
+  // Handle Rive animation state changes based on recording/pause state
+  useEffect(() => {
+    if (!rive) return;
+
+    const inputs = rive.stateMachineInputs("State Machine 1");
+    if (!inputs) return;
+
+    if (isRecording && !isPaused) {
+      // Recording and not paused - trigger "listening" state
+      const listeningTrigger = inputs.find(i =>
+        i.name.toLowerCase() === "listening" ||
+        i.name.toLowerCase() === "voice started" ||
+        i.name === "Voice started"
+      );
+      if (listeningTrigger) {
+        console.log("🎤 Firing listening/voice started trigger");
+        listeningTrigger.fire();
+      }
+    } else if (isPaused) {
+      // Paused - trigger "idle" state
+      const idleTrigger = inputs.find(i =>
+        i.name.toLowerCase() === "idle" ||
+        i.name.toLowerCase() === "loading" ||
+        i.name === "Loading"
+      );
+      if (idleTrigger) {
+        console.log("⏸️ Firing idle/loading trigger");
+        idleTrigger.fire();
+      }
+    }
+  }, [rive, isRecording, isPaused]);
 
   // Load saved context from localStorage on mount
   useEffect(() => {
@@ -188,15 +210,6 @@ export default function Home() {
         }
       });
       audioStreamRef.current = stream;
-
-      if (rive) {
-        const inputs = rive.stateMachineInputs("State Machine 1");
-        const voiceStartedTrigger = inputs?.find(i => i.name === "Voice started");
-        if (voiceStartedTrigger) {
-          console.log("Firing Voice started trigger");
-          voiceStartedTrigger.fire();
-        }
-      }
 
       setAppState("recording");
       setIsRecording(true);
@@ -434,11 +447,11 @@ export default function Home() {
       }}
     >
       {/* Top Header */}
-      <div className="w-full text-center pt-4 pb-2">
+      {/* <div className="w-full text-center pt-4 pb-2">
         <p className="text-sm font-medium text-[#ffffff]" data-testid="text-header">
           Conversation Companion
         </p>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center">
@@ -447,13 +460,7 @@ export default function Home() {
             {/* Rive Animation */}
             <div className="flex justify-center -mt-2">
               <div className="w-80 h-80">
-                {rive ? (
-                  <RiveComponent className="w-full h-full" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/50 text-xs">
-                    {/* Loading... */}
-                  </div>
-                )}
+                <RiveComponent className="w-full h-full" />
               </div>
             </div>
 
@@ -463,7 +470,7 @@ export default function Home() {
                 COCO
               </h1>
               <p className="text-sm text-[#ffffff]">
-                Say a bit more about your chat!
+                Your conversation coach 
               </p>
             </div>
 
@@ -512,7 +519,7 @@ export default function Home() {
               >
                 <span className="flex items-center gap-2 text-[#ffffff]">
                   {eventDetails && <Check className="h-4 w-4 text-primary" />}
-                  Event Details
+                  Conversation Details
                 </span>
               </Button>
 
@@ -580,7 +587,7 @@ export default function Home() {
 
               {editingField === "eventDetails" && (
                 <Input
-                  placeholder="e.g., Team meeting"
+                  placeholder="e.g. Salary negotiation call"
                   value={eventDetails}
                   onChange={(e) => setEventDetails(e.target.value)}
                   className="h-12 text-base bg-white/90 rounded-full focus-visible:ring-yellow-400"
